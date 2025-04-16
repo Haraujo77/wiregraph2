@@ -1,0 +1,11 @@
+{
+  "name": "3d-card-stack-visualization",
+  "version": "1.0.0",
+  "description": "A 3D visualization of stacked cards with animation options",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT"
+} 
