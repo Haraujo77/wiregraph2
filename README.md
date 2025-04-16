@@ -33,7 +33,7 @@ A 3D card stack visualization tool built with p5.js that allows for interactive 
 
 ## Live Demo
 
-Visit the [live demo](https://wiregraph2.github.io) to try it out!
+Visit the [live demo](https://haraujo77.github.io/wiregraph2/) to try it out!
 
 ## Technologies
 
@@ -47,4 +47,4 @@ MIT
 
 ## Credits
 
-Created by Helder Araujo 
+Created by Helder Araujo (haraujo77) 
