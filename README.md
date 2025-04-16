@@ -47,4 +47,4 @@ MIT
 
 ## Credits
 
-Created by [Your Name] 
+Created by Helder Araujo 

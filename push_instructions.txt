@@ -1,0 +1,31 @@
+GitHub Repository Setup Instructions
+
+1. Create a new repository on GitHub:
+   - Go to https://github.com/new
+   - Enter "wiregraph2" as the repository name
+   - Add the description: "A 3D card stack visualization tool built with p5.js"
+   - Make it Public
+   - DO NOT initialize with README, .gitignore, or license (we already have these)
+   - Click "Create repository"
+
+2. Copy the remote URL from GitHub (it will look like: https://github.com/YOUR-USERNAME/wiregraph2.git)
+
+3. Use the following commands in your terminal:
+   
+   # Remove the existing remote if necessary
+   git remote remove origin
+   
+   # Add your GitHub repository as the remote
+   git remote add origin https://github.com/helderaraujo/wiregraph2.git
+   
+   # Push your code to GitHub
+   git push -u origin main
+
+4. To set up GitHub Pages:
+   - Go to your repository settings on GitHub
+   - Scroll down to the "GitHub Pages" section
+   - For "Source", select "main" branch 
+   - Click "Save"
+   - Wait a few minutes for GitHub Pages to build your site
+
+Your site will be available at: https://helderaraujo.github.io/wiregraph2/ 
