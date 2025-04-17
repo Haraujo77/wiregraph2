@@ -1,50 +1,85 @@
 # WireGraph2
 
-A 3D card stack visualization tool built with p5.js that allows for interactive manipulation and animation of card stacks.
+An interactive 3D card visualization tool built with p5.js. This web application allows you to create and manipulate 3D card stacks with dynamic animations and customizable parameters.
 
 ## Features
 
-- Interactive 3D card visualization with customizable parameters
-- Multiple animation modes: Wheel, Fan, Wave, and Random Heights
-- Toggle between isometric and perspective views
-- Camera controls with zoom and rotation
-- Randomize card heights with market-like patterns
-- Export to SVG for use in design tools
-- Responsive design that works on both desktop and mobile
+- **Cards Mode**: Create and animate stacks of cards with customizable properties
+  - Animations: Wheel, Fan, Wave, and Randomized Heights
+  - Adjustable card dimensions, colors, and spacing
+  - Camera controls with rotation and zoom capabilities
 
-## How to Use
+- **Blocks Mode**: Visualize portfolio data as 3D blocks
+  - Group cards into categories with custom colors
+  - Add and manage cards with specific values
+  - Automatic thickness scaling based on card values
 
-1. Adjust parameters in the control panel to customize your card stack
-2. Toggle between different views using the isometric/perspective switch
-3. Use the animation modes to visualize the cards in different arrangements
-4. Export to SVG when you have the perfect visualization
+- **Visualization Options**:
+  - Isometric view with adjustable angles
+  - Perspective view with orbit controls
+  - Auto-rotation on multiple axes
+  - Camera transitions during animations
 
-## Controls
-
-- **Number of Cards**: Total cards in the visualization
-- **Wheel Radius**: Size of wheel/fan animations 
-- **Card Width/Height/Thickness**: Individual card dimensions
-- **Stack Spacing**: Distance between cards in the stack
-- **Animation Duration**: Time for animations to complete
-- **Animation Mode**: Different arrangements (Wheel, Fan, Wave, Random Heights)
-- **Card Color** & **Stroke**: Visual styling options
-- **Camera Settings**: Control zoom and rotation angles
-- **Isometric View**: Toggle between perspective and isometric projection
+- **Export Capabilities**:
+  - Export visualizations as SVG
+  - Copy SVG to clipboard for use in other applications
 
 ## Live Demo
 
-Visit the [live demo](https://haraujo77.github.io/wiregraph2/) to try it out!
+Check out the live demo at [https://haraujo77.github.io/wiregraph2/](https://haraujo77.github.io/wiregraph2/)
 
-## Technologies
+## Usage
 
-- p5.js for rendering and animation
-- p5.js-svg for SVG export
-- Node.js for local development server
+1. Select either Cards or Blocks tab
+2. Adjust the settings using the control panel
+3. Use the "Animate" button to start animations
+4. Export your visualization as SVG when finished
+
+### Cards Mode
+
+The Cards mode allows you to create a stack of cards with uniform dimensions and animate them in various patterns:
+- **Wheel**: Arranges cards in a circular pattern
+- **Fan**: Spreads cards in a fan-like arrangement
+- **Wave**: Creates a wave pattern with the cards
+- **Random Heights**: Generates varied card heights with market-like fluctuations
+
+### Blocks Mode
+
+The Blocks mode is designed for visualizing data with proportional card thickness:
+- Create card groups representing different categories
+- Assign values to cards that automatically determine their thickness
+- Customize colors for different card groups
+
+## Implementation Details
+
+The application is built with p5.js and uses WEBGL for 3D rendering. Key technical features include:
+- Custom 3D camera controls with orbit functionality
+- SVG export with accurate depth representation
+- Smooth animations with easing functions
+- Responsive design that works on various screen sizes
+
+## Running Locally
+
+```bash
+# Clone the repository
+git clone https://github.com/haraujo77/wiregraph2.git
+
+# Navigate to the directory
+cd wiregraph2
+
+# Install dependencies
+npm install
+
+# Start the server
+npm start
+```
+
+Then open your browser to `http://localhost:8082`
 
 ## License
 
-MIT
+MIT License
 
 ## Credits
 
-Created by Helder Araujo (haraujo77) 
+Created by Helder Araujo (haraujo77)
