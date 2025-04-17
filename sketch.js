@@ -47,3 +47,42 @@ let config = {
     rotationSpeedY: 0.5,
     rotationSpeedZ: 0.5
 };
+
+// Cards array and states
+let cards = [];
+let originalHeights = [];
+let originalYPositions = [];
+let targetPositions = [];
+let isRandomized = false;
+let isAnimating = false;
+let animationStartTime = 0;
+let isReversed = false; // Track if we're in reverse animation
+let inAnimatedState = false; // Track if cards are in animated state
+
+// Block mode data structures
+let cardGroups = [];
+
+// Camera transition state
+let initialCameraState = {};
+let originalFinalCameraState = {}; // Store original final camera settings
+
+// Canvas sizing
+let canvasWidth;
+let canvasHeight;
+let canvas;
+
+// View scaling
+let viewScale = 5;
+
+// SVG elements for export
+let svgBuffer;
+let svgString = "";
+
+// Flag to prevent recursive updates
+let isUpdating = false;
+
+// Mouse interaction for custom orbit control
+let mouseDown = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let isDragging = false;
