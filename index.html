@@ -20,208 +20,399 @@
                 <button id="closePanel" class="close-btn"><i class="fas fa-times"></i></button>
             </div>
             
+            <div class="tab-navigation">
+                <button id="cardsTabBtn" class="tab-btn active">Cards</button>
+                <button id="blocksTabBtn" class="tab-btn">Blocks</button>
+            </div>
+            
             <div class="controls">
-                <div class="form-group">
-                    <label for="numCards">Number of Cards (N):</label>
-                    <input type="number" id="numCards" value="100" min="1" max="500">
-                </div>
-
-                <div class="form-group">
-                    <label for="wheelRadius">Wheel Radius:</label>
-                    <input type="number" id="wheelRadius" value="40" min="10" max="200">
-                </div>
-
-                <div class="form-group">
-                    <label for="cardWidth">Card Width:</label>
-                    <input type="number" id="cardWidth" value="20" min="1" max="100">
-                </div>
-
-                <div class="form-group">
-                    <label for="cardHeight">Card Height:</label>
-                    <input type="number" id="cardHeight" value="30" min="1" max="100">
-                </div>
-
-                <div class="form-group">
-                    <label for="cardThickness">Card Thickness:</label>
-                    <input type="number" id="cardThickness" value="0.01" min="0.01" max="10" step="0.01">
-                </div>
-
-                <div class="form-group">
-                    <label for="stackSpacing">Stack Spacing:</label>
-                    <input type="number" id="stackSpacing" value="1" min="0" max="10" step="0.1">
-                </div>
-
-                <div class="form-group">
-                    <label for="animationDuration">Animation Duration (s):</label>
-                    <input type="number" id="animationDuration" value="2" min="0.1" max="10" step="0.1">
-                </div>
-
-                <div class="form-group">
-                    <label for="animationMode">Animation Mode:</label>
-                    <select id="animationMode">
-                        <option value="none">None (Static View)</option>
-                        <option value="wheel">Wheel</option>
-                        <option value="fan">Fan</option>
-                        <option value="wave">Wave</option>
-                        <option value="randomHeights">Random Heights</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cardColor">Card Color:</label>
-                    <input type="color" id="cardColor" value="#000000">
-                </div>
-
-                <div class="form-group">
-                    <label for="strokeWeight">Stroke Weight:</label>
-                    <input type="number" id="strokeWeight" value="1.0" min="0" max="3" step="0.1">
-                </div>
-
-                <div class="form-group">
-                    <label for="strokeColor">Stroke Color:</label>
-                    <input type="color" id="strokeColor" value="#FFFFFF">
-                </div>
-                
-                <div class="section-header">Camera Settings</div>
-                
-                <div class="form-group">
-                    <label for="cameraZoom">Camera Zoom:</label>
-                    <div class="slider-with-value">
-                        <input type="range" id="cameraZoom" value="1" min="0.1" max="2" step="0.05">
-                        <input type="number" id="cameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
-                    </div>
-                </div>
-                
-                <div class="section-header">Camera Auto-Rotation</div>
-                
-                <div class="form-group toggle-switch">
-                    <label for="autoRotateX">Auto-Rotate X:</label>
-                    <label class="switch">
-                        <input type="checkbox" id="autoRotateX">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                
-                <div class="form-group toggle-switch">
-                    <label for="autoRotateY">Auto-Rotate Y:</label>
-                    <label class="switch">
-                        <input type="checkbox" id="autoRotateY">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                
-                <div class="form-group toggle-switch">
-                    <label for="autoRotateZ">Auto-Rotate Z:</label>
-                    <label class="switch">
-                        <input type="checkbox" id="autoRotateZ">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                
-                <div class="form-group toggle-switch">
-                    <label for="isometricView">Isometric View:</label>
-                    <label class="switch">
-                        <input type="checkbox" id="isometricView">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                
-                <div class="isometric-controls">
+                <div id="cards-tab" class="tab-content active">
                     <div class="form-group">
-                        <label for="isoRotationX">Isometric X Rotation:</label>
-                        <div class="input-with-value">
-                            <input type="number" id="isoRotationX" value="-35.264" min="-90" max="90" step="0.1">
-                            <span class="value-display">-35.264°</span>
-                        </div>
+                        <label for="numCards">Number of Cards (N):</label>
+                        <input type="number" id="numCards" value="100" min="1" max="500">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wheelRadius">Wheel Radius:</label>
+                        <input type="number" id="wheelRadius" value="40" min="10" max="200">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardWidth">Card Width:</label>
+                        <input type="number" id="cardWidth" value="20" min="1" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardHeight">Card Height:</label>
+                        <input type="number" id="cardHeight" value="30" min="1" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardThickness">Card Thickness:</label>
+                        <input type="number" id="cardThickness" value="0.01" min="0.01" max="10" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stackSpacing">Stack Spacing:</label>
+                        <input type="number" id="stackSpacing" value="1" min="0" max="10" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="animationDuration">Animation Duration (s):</label>
+                        <input type="number" id="animationDuration" value="2" min="0.1" max="10" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="animationMode">Animation Mode:</label>
+                        <select id="animationMode">
+                            <option value="none">None (Static View)</option>
+                            <option value="wheel">Wheel</option>
+                            <option value="fan">Fan</option>
+                            <option value="wave">Wave</option>
+                            <option value="randomHeights">Random Heights</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="isoRotationY">Isometric Y Rotation:</label>
-                        <div class="input-with-value">
-                            <input type="number" id="isoRotationY" value="-45" min="-90" max="90" step="0.1">
-                            <span class="value-display">-45°</span>
-                        </div>
+                        <label for="cardColor">Card Color:</label>
+                        <input type="color" id="cardColor" value="#000000">
                     </div>
-                </div>
-                
-                <div class="perspective-controls">
+
                     <div class="form-group">
-                        <label for="cameraRotationX">Camera X Rotation:</label>
+                        <label for="strokeWeight">Stroke Weight:</label>
+                        <input type="number" id="strokeWeight" value="1.0" min="0" max="3" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="strokeColor">Stroke Color:</label>
+                        <input type="color" id="strokeColor" value="#FFFFFF">
+                    </div>
+                    
+                    <div class="section-header">Camera Settings</div>
+                    
+                    <div class="form-group">
+                        <label for="cameraZoom">Camera Zoom:</label>
                         <div class="slider-with-value">
-                            <input type="range" id="cameraRotationX" value="0" min="-180" max="180" step="1">
-                            <input type="number" id="cameraRotationXInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            <input type="range" id="cameraZoom" value="1" min="0.1" max="2" step="0.05">
+                            <input type="number" id="cameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="cameraRotationY">Camera Y Rotation:</label>
-                        <div class="slider-with-value">
-                            <input type="range" id="cameraRotationY" value="0" min="-180" max="180" step="1">
-                            <input type="number" id="cameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="cameraRotationZ">Camera Z Rotation:</label>
-                        <div class="slider-with-value">
-                            <input type="range" id="cameraRotationZ" value="0" min="-180" max="180" step="1">
-                            <input type="number" id="cameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
-                        </div>
-                    </div>
+                    <div class="section-header">Camera Auto-Rotation</div>
                     
                     <div class="form-group toggle-switch">
-                        <label for="enableCameraTransition">Camera Transition:</label>
+                        <label for="autoRotateX">Auto-Rotate X:</label>
                         <label class="switch">
-                            <input type="checkbox" id="enableCameraTransition">
+                            <input type="checkbox" id="autoRotateX">
                             <span class="slider round"></span>
                         </label>
                     </div>
                     
-                    <div class="camera-transition-controls" style="display: none;">
-                        <div class="section-header">Final Camera Position</div>
-                        
+                    <div class="form-group toggle-switch">
+                        <label for="autoRotateY">Auto-Rotate Y:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoRotateY">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="autoRotateZ">Auto-Rotate Z:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoRotateZ">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="isometricView">Isometric View:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="isometricView">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="isometric-controls">
                         <div class="form-group">
-                            <label for="finalCameraZoom">Final Zoom:</label>
-                            <div class="slider-with-value">
-                                <input type="range" id="finalCameraZoom" value="1" min="0.1" max="2" step="0.05">
-                                <input type="number" id="finalCameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
+                            <label for="isoRotationX">Isometric X Rotation:</label>
+                            <div class="input-with-value">
+                                <input type="number" id="isoRotationX" value="-35.264" min="-90" max="90" step="0.1">
+                                <span class="value-display">-35.264°</span>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="finalCameraRotationX">Final X Rotation:</label>
-                            <div class="slider-with-value">
-                                <input type="range" id="finalCameraRotationX" value="45" min="-180" max="180" step="1">
-                                <input type="number" id="finalCameraRotationXInput" value="45" min="-180" max="180" step="1" class="value-input">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="finalCameraRotationY">Final Y Rotation:</label>
-                            <div class="slider-with-value">
-                                <input type="range" id="finalCameraRotationY" value="0" min="-180" max="180" step="1">
-                                <input type="number" id="finalCameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="finalCameraRotationZ">Final Z Rotation:</label>
-                            <div class="slider-with-value">
-                                <input type="range" id="finalCameraRotationZ" value="0" min="-180" max="180" step="1">
-                                <input type="number" id="finalCameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            <label for="isoRotationY">Isometric Y Rotation:</label>
+                            <div class="input-with-value">
+                                <input type="number" id="isoRotationY" value="-45" min="-90" max="90" step="0.1">
+                                <span class="value-display">-45°</span>
                             </div>
                         </div>
                     </div>
-                </div>
+                    
+                    <div class="perspective-controls">
+                        <div class="form-group">
+                            <label for="cameraRotationX">Camera X Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="cameraRotationX" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="cameraRotationXInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cameraRotationY">Camera Y Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="cameraRotationY" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="cameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cameraRotationZ">Camera Z Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="cameraRotationZ" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="cameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group toggle-switch">
+                            <label for="enableCameraTransition">Camera Transition:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="enableCameraTransition">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="camera-transition-controls" style="display: none;">
+                            <div class="section-header">Final Camera Position</div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraZoom">Final Zoom:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraZoom" value="1" min="0.1" max="2" step="0.05">
+                                    <input type="number" id="finalCameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraRotationX">Final X Rotation:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraRotationX" value="45" min="-180" max="180" step="1">
+                                    <input type="number" id="finalCameraRotationXInput" value="45" min="-180" max="180" step="1" class="value-input">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraRotationY">Final Y Rotation:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraRotationY" value="0" min="-180" max="180" step="1">
+                                    <input type="number" id="finalCameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraRotationZ">Final Z Rotation:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraRotationZ" value="0" min="-180" max="180" step="1">
+                                    <input type="number" id="finalCameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="form-group actions">
-                    <button id="updateBtn">Reset/Apply</button>
-                    <button id="randomizeHeightsBtn">Randomize Heights</button>
-                    <button id="resetBtn">Reset</button>
-                    <button id="animateBtn">Animate</button>
-                    <button id="saveSvgBtn">Save SVG</button>
-                    <button id="copySvgBtn">Copy SVG</button>
-                    <button id="resetCacheBtn" class="warning-btn">Reset Cache</button>
+                    <div class="form-group actions">
+                        <button id="updateBtn">Reset/Apply</button>
+                        <button id="randomizeHeightsBtn">Randomize Heights</button>
+                        <button id="resetBtn">Reset</button>
+                        <button id="animateBtn">Animate</button>
+                        <button id="saveSvgBtn">Save SVG</button>
+                        <button id="copySvgBtn">Copy SVG</button>
+                        <button id="resetCacheBtn" class="warning-btn">Reset Cache</button>
+                    </div>
+                </div>
+                
+                <div id="blocks-tab" class="tab-content">
+                    <div class="section-header">Card Settings</div>
+                    <div class="note-box">
+                        Note: Card thickness is automatically set based on card value. Group colors apply to stroke outlines only.
+                    </div>
+                    <div class="form-group">
+                        <label for="blockCardWidth">Card Width:</label>
+                        <input type="number" id="blockCardWidth" value="20" min="1" max="100" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="blockCardHeight">Card Height:</label>
+                        <input type="number" id="blockCardHeight" value="30" min="1" max="100" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="blockStackSpacing">Card Spacing:</label>
+                        <input type="number" id="blockStackSpacing" value="1" min="0" max="10" step="0.1">
+                    </div>
+                    
+                    <div class="section-header">Group Settings</div>
+                    <div class="form-group">
+                        <label for="groupSpacing">Spacing Between Groups:</label>
+                        <input type="number" id="groupSpacing" value="3" min="1" max="50" step="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <button id="addGroupBtn" class="action-btn"><i class="fas fa-plus"></i> Add Group</button>
+                    </div>
+                    
+                    <div class="groups-container" id="groupsContainer">
+                        <!-- Groups will be added here dynamically -->
+                    </div>
+                    
+                    <div class="section-header">Block Appearance</div>
+                    <div class="form-group">
+                        <label for="blockCardColor">Card Color:</label>
+                        <input type="color" id="blockCardColor" value="#000000">
+                    </div>
+                    <div class="form-group">
+                        <label for="blockStrokeWeight">Stroke Weight:</label>
+                        <input type="number" id="blockStrokeWeight" value="1.0" min="0" max="3" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="blockStrokeColor">Stroke Color:</label>
+                        <input type="color" id="blockStrokeColor" value="#FFFFFF">
+                    </div>
+                    
+                    <div class="section-header">Camera Settings</div>
+                    <div class="form-group">
+                        <label for="blockCameraZoom">Camera Zoom:</label>
+                        <div class="slider-with-value">
+                            <input type="range" id="blockCameraZoom" value="1" min="0.1" max="2" step="0.05">
+                            <input type="number" id="blockCameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
+                        </div>
+                    </div>
+                    
+                    <div class="section-header">Camera Auto-Rotation</div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="blockAutoRotateX">Auto-Rotate X:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="blockAutoRotateX">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="blockAutoRotateY">Auto-Rotate Y:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="blockAutoRotateY">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="blockAutoRotateZ">Auto-Rotate Z:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="blockAutoRotateZ">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="blockIsometricView">Isometric View:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="blockIsometricView">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="isometric-controls">
+                        <div class="form-group">
+                            <label for="blockIsoRotationX">Isometric X Rotation:</label>
+                            <div class="input-with-value">
+                                <input type="number" id="blockIsoRotationX" value="-35.264" min="-90" max="90" step="0.1">
+                                <span class="value-display">-35.264°</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="blockIsoRotationY">Isometric Y Rotation:</label>
+                            <div class="input-with-value">
+                                <input type="number" id="blockIsoRotationY" value="-45" min="-90" max="90" step="0.1">
+                                <span class="value-display">-45°</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="perspective-controls">
+                        <div class="form-group">
+                            <label for="cameraRotationX">Camera X Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="cameraRotationX" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="cameraRotationXInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cameraRotationY">Camera Y Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="cameraRotationY" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="cameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cameraRotationZ">Camera Z Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="cameraRotationZ" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="cameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group toggle-switch">
+                            <label for="enableCameraTransition">Camera Transition:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="enableCameraTransition">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="camera-transition-controls" style="display: none;">
+                            <div class="section-header">Final Camera Position</div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraZoom">Final Zoom:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraZoom" value="1" min="0.1" max="2" step="0.05">
+                                    <input type="number" id="finalCameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraRotationX">Final X Rotation:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraRotationX" value="45" min="-180" max="180" step="1">
+                                    <input type="number" id="finalCameraRotationXInput" value="45" min="-180" max="180" step="1" class="value-input">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraRotationY">Final Y Rotation:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraRotationY" value="0" min="-180" max="180" step="1">
+                                    <input type="number" id="finalCameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="finalCameraRotationZ">Final Z Rotation:</label>
+                                <div class="slider-with-value">
+                                    <input type="range" id="finalCameraRotationZ" value="0" min="-180" max="180" step="1">
+                                    <input type="number" id="finalCameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group actions">
+                        <button id="updateBlocksBtn">Apply Changes</button>
+                        <button id="resetBlocksBtn">Reset</button>
+                        <button id="saveSvgBlocksBtn">Save SVG</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -256,10 +447,33 @@
             document.getElementById('canvas-container').classList.remove('shifted');
         });
         
+        // Tab switching
+        document.getElementById('cardsTabBtn').addEventListener('click', function() {
+            switchTab('cards');
+        });
+        
+        document.getElementById('blocksTabBtn').addEventListener('click', function() {
+            switchTab('blocks');
+        });
+        
         // Toggle isometric controls visibility based on checkbox state
         document.getElementById('isometricView').addEventListener('change', function() {
-            const isoControls = document.querySelector('.isometric-controls');
-            const perspControls = document.querySelector('.perspective-controls');
+            const isoControls = document.querySelector('#cards-tab .isometric-controls');
+            const perspControls = document.querySelector('#cards-tab .perspective-controls');
+            
+            if (this.checked) {
+                isoControls.classList.add('visible');
+                perspControls.classList.remove('visible');
+            } else {
+                isoControls.classList.remove('visible');
+                perspControls.classList.add('visible');
+            }
+        });
+        
+        // Toggle isometric controls visibility in blocks tab
+        document.getElementById('blockIsometricView').addEventListener('change', function() {
+            const isoControls = document.querySelector('#blocks-tab .isometric-controls');
+            const perspControls = document.querySelector('#blocks-tab .perspective-controls');
             
             if (this.checked) {
                 isoControls.classList.add('visible');
@@ -286,7 +500,12 @@
             if (!document.getElementById('isometricView').checked) {
                 perspControls.classList.add('visible');
             }
+            
+            // Initialize tabs
+            document.getElementById('cardsTabBtn').classList.add('active');
+            document.getElementById('cards-tab').classList.add('active');
+            document.getElementById('blocks-tab').classList.remove('active');
         });
     </script>
 </body>
-</html> 
+</html>
