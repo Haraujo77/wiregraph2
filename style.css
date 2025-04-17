@@ -257,6 +257,194 @@ input:checked + .slider:before {
     width: 100%;
 }
 
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    border-bottom: 1px solid #444;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    background-color: #333;
+    color: #ccc;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-align: center;
+    margin: 0;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+    background-color: #222;
+    color: #fff;
+    border-bottom: 3px solid #3498db;
+}
+
+.tab-btn:hover:not(.active) {
+    background-color: #404040;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Blocks Tab Styles */
+.groups-container {
+    margin-top: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.card-group {
+    background-color: rgba(50, 50, 50, 0.5);
+    border-radius: 6px;
+    border-left: 3px solid #e67e22;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.group-title {
+    font-weight: bold;
+    color: #e67e22;
+    margin: 0;
+    flex: 1;
+}
+
+.group-title-input {
+    background-color: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 100%;
+    margin-right: 10px;
+}
+
+.group-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.group-actions button {
+    padding: 4px 8px;
+    min-width: auto;
+    margin: 0;
+}
+
+.group-color-container {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.group-color-label {
+    margin-right: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.group-color-picker {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-card-btn {
+    background-color: #2ecc71;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.add-card-btn:hover {
+    background-color: #27ae60;
+}
+
+.remove-group-btn {
+    background-color: #e74c3c;
+}
+
+.remove-group-btn:hover {
+    background-color: #c0392b;
+}
+
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-item {
+    display: flex;
+    align-items: center;
+    background-color: rgba(40, 40, 40, 0.7);
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.card-name {
+    flex: 2;
+    margin-right: 8px;
+}
+
+.card-value {
+    flex: 1;
+    margin-right: 8px;
+}
+
+.card-value-input {
+    background-color: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.card-name-input {
+    background-color: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.card-remove-btn {
+    background-color: #e74c3c;
+    padding: 4px 8px;
+    min-width: auto;
+    margin: 0;
+}
+
+.card-remove-btn:hover {
+    background-color: #c0392b;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
 /* Isometric Controls */
 .isometric-controls {
     margin-top: 10px;
@@ -446,4 +634,15 @@ canvas {
     .github-corner .octo-arm {
         animation: octocat-wave 560ms ease-in-out;
     }
-} 
+}
+
+/* Note Box */
+.note-box {
+    background-color: rgba(52, 152, 219, 0.1);
+    border-left: 3px solid #3498db;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: #ccc;
+    font-style: italic;
+}
