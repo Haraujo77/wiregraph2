@@ -1,5 +1,6 @@
 // Configuration
 let config = {
+    // Cards tab settings
     numCards: 100,
     wheelRadius: 40,
     cardWidth: 20,
@@ -11,6 +12,18 @@ let config = {
     cardColor: '#000000',
     strokeWeight: 1.0,
     strokeColor: '#FFFFFF',
+    
+    // Blocks tab settings
+    activeTab: 'cards', // 'cards' or 'blocks'
+    groupSpacing: 3,
+    blockCardWidth: 20,
+    blockCardHeight: 30,
+    blockStackSpacing: 1,
+    blockCardColor: '#000000',
+    blockStrokeWeight: 1.0,
+    blockStrokeColor: '#FFFFFF',
+    
+    // View settings (shared by both tabs)
     isometricView: false,
     isoRotationX: -35.264,
     isoRotationY: -45,
@@ -45,6 +58,9 @@ let isAnimating = false;
 let animationStartTime = 0;
 let isReversed = false; // Track if we're in reverse animation
 let inAnimatedState = false; // Track if cards are in animated state
+
+// Block mode data structures
+let cardGroups = [];
 
 // Camera transition state
 let initialCameraState = {};
@@ -88,6 +104,9 @@ function setup() {
     // Create initial cards
     initCards();
     
+    // Initialize block groups with default cards
+    initCardGroups();
+    
     // Handle window resizing
     window.addEventListener('resize', windowResized);
     
@@ -95,247 +114,509 @@ function setup() {
     setupOrbitControlListeners();
 }
 
-function setupOrbitControlListeners() {
-    // Mouse down event on canvas
-    canvas.mousePressed(canvasMousePressed);
+// Create initial card groups for blocks tab
+function initCardGroups() {
+    // Reset card groups
+    cardGroups = [];
     
-    // Mouse move event (anywhere)
-    document.addEventListener('mousemove', documentMouseMoved);
+    // Define the 8 investment category groups with their default colors
+    const investmentCategories = [
+        { name: "Cash", color: "#4CAF50" },        // Green
+        { name: "Crypto", color: "#FF9800" },      // Orange
+        { name: "Options", color: "#F44336" },     // Red
+        { name: "Stocks", color: "#2196F3" },      // Blue
+        { name: "ETFs", color: "#9C27B0" },        // Purple
+        { name: "Bonds", color: "#00BCD4" },       // Cyan
+        { name: "Funds", color: "#FFEB3B" },       // Yellow
+        { name: "Other", color: "#607D8B" }        // Blue Grey
+    ];
     
-    // Mouse up event (anywhere)
-    document.addEventListener('mouseup', documentMouseReleased);
+    // Sample assets for each category with realistic values
+    const assetsData = {
+        "Cash": [
+            { name: "USD", value: "10000.00" },
+            { name: "EUR", value: "5000.00" },
+            { name: "JPY", value: "2000.00" }
+        ],
+        "Crypto": [
+            { name: "Bitcoin", value: "7500.00" },
+            { name: "Ethereum", value: "2500.00" },
+            { name: "Solana", value: "1000.00" }
+        ],
+        "Options": [
+            { name: "AAPL Calls", value: "1200.00" },
+            { name: "SPY Puts", value: "800.00" }
+        ],
+        "Stocks": [
+            { name: "AAPL", value: "5000.00" },
+            { name: "MSFT", value: "4500.00" },
+            { name: "AMZN", value: "3000.00" },
+            { name: "GOOGL", value: "2500.00" },
+            { name: "TSLA", value: "2000.00" }
+        ],
+        "ETFs": [
+            { name: "VOO", value: "10000.00" },
+            { name: "QQQ", value: "7500.00" },
+            { name: "VTI", value: "5000.00" }
+        ],
+        "Bonds": [
+            { name: "Treasury", value: "5000.00" },
+            { name: "Municipal", value: "3000.00" },
+            { name: "Corporate", value: "2000.00" }
+        ],
+        "Funds": [
+            { name: "VTSAX", value: "8000.00" },
+            { name: "VFIAX", value: "6000.00" }
+        ],
+        "Other": [
+            { name: "Gold", value: "3000.00" },
+            { name: "Real Estate", value: "15000.00" }
+        ]
+    };
     
-    // Mouse wheel event for zoom
-    canvas.mouseWheel(canvasMouseWheel);
-}
-
-function canvasMousePressed() {
-    // Only register left mouse button
-    if (mouseButton === LEFT) {
-        mouseDown = true;
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-        isDragging = false;
-    }
-}
-
-function documentMouseMoved(e) {
-    if (!mouseDown || config.isometricView) return;
-    
-    // Detect if we're actually dragging (not just a click)
-    if (Math.abs(mouseX - lastMouseX) > 2 || Math.abs(mouseY - lastMouseY) > 2) {
-        isDragging = true;
-    }
-    
-    if (isDragging) {
-        // Calculate drag distance
-        const deltaX = mouseX - lastMouseX;
-        const deltaY = mouseY - lastMouseY;
-        
-        // Update camera rotation based on drag
-        // Horizontal drag affects Y rotation
-        config.cameraRotationY += deltaX * 0.5;
-        
-        // Vertical drag affects X rotation
-        config.cameraRotationX += deltaY * 0.5;
-        
-        // Normalize angles to -180 to 180 range
-        config.cameraRotationY = normalizeDegrees(config.cameraRotationY);
-        config.cameraRotationX = normalizeDegrees(config.cameraRotationX);
-        
-        // Update the input fields without causing a recursive update
-        updateRotationInputFields();
-        
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-    }
-}
-
-function documentMouseReleased() {
-    mouseDown = false;
-    isDragging = false;
-}
-
-function canvasMouseWheel(event) {
-    if (config.isometricView) return;
-    
-    // Adjust camera zoom with mouse wheel
-    config.cameraZoom -= event.delta * 0.001;
-    
-    // Limit zoom values
-    config.cameraZoom = constrain(config.cameraZoom, 0.1, 5);
-    
-    // Update zoom input field
-    updateZoomInputField();
-    
-    // Prevent default behavior (page scrolling)
-    return false;
-}
-
-function normalizeDegrees(angle) {
-    // Keep angle between -180 and 180
-    angle = angle % 360;
-    if (angle > 180) angle -= 360;
-    if (angle < -180) angle += 360;
-    return angle;
-}
-
-function updateRotationInputFields() {
-    // Prevent recursive updates
-    if (isUpdating) return;
-    isUpdating = true;
-    
-    // Update input fields with current rotation values
-    const xRotInput = document.getElementById('cameraRotationX');
-    const yRotInput = document.getElementById('cameraRotationY');
-    const zRotInput = document.getElementById('cameraRotationZ');
-    
-    // Update range sliders
-    xRotInput.value = Math.round(config.cameraRotationX);
-    yRotInput.value = Math.round(config.cameraRotationY);
-    zRotInput.value = Math.round(config.cameraRotationZ);
-    
-    // Update number inputs
-    document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
-    document.getElementById('cameraRotationYInput').value = Math.round(config.cameraRotationY);
-    document.getElementById('cameraRotationZInput').value = Math.round(config.cameraRotationZ);
-    
-    isUpdating = false;
-}
-
-function updateZoomInputField() {
-    // Prevent recursive updates
-    if (isUpdating) return;
-    isUpdating = true;
-    
-    // Update zoom input field
-    const zoomInput = document.getElementById('cameraZoom');
-    zoomInput.value = config.cameraZoom.toFixed(2);
-    
-    // Update number input
-    document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
-    
-    isUpdating = false;
-}
-
-function windowResized() {
-    updateCanvasSize();
-    resizeCanvas(canvasWidth, canvasHeight);
-}
-
-function updateCanvasSize() {
-    const container = document.getElementById('canvas-container');
-    canvasWidth = container.clientWidth;
-    canvasHeight = container.clientHeight;
-}
-
-function updateViewScale() {
-    // Dynamically calculate the view scale based on the number of cards and spacing
-    // This ensures the entire stack is visible at any spacing value
-    const stackLength = config.numCards * config.stackSpacing;
-    const baseScale = 5; // Default scale for spacing = 1
-    
-    // Scale inversely with spacing but with a reasonable limit
-    // Higher spacing values need smaller scale values
-    viewScale = baseScale * (1 / sqrt(config.stackSpacing));
-    
-    // Adjust further if we have a lot of cards
-    if (config.numCards > 100) {
-        viewScale *= 100 / config.numCards;
-    }
-    
-    // Apply user zoom factor
-    viewScale *= config.cameraZoom;
-    
-    // Ensure scale stays within reasonable bounds
-    viewScale = constrain(viewScale, 0.5, 20);
-}
-
-function draw() {
-    background(0);
-    
-    // Update the view scale dynamically based on current config
-    updateViewScale();
-    
-    // Update camera rotations if auto-rotate is enabled
-    updateAutoRotation();
-    
-    // Decide camera type based on isometric mode
-    if (config.isometricView) {
-        // Fixed isometric view
-        // Reset camera perspective
-        ortho(-width/2, width/2, -height/2, height/2, -2000, 2000);
-        
-        // Set isometric angle based on user inputs
-        rotateX(radians(config.isoRotationX));
-        rotateY(radians(config.isoRotationY));
-    } else {
-        // Default perspective with controls
-        perspective();
-        
-        // Apply user-defined camera rotation
-        rotateX(radians(config.cameraRotationX));
-        rotateY(radians(config.cameraRotationY));
-        rotateZ(radians(config.cameraRotationZ));
-        
-        // We're now using our custom orbit control instead of built-in
-        // if (config.enableOrbitControl) {
-        //     orbitControl();
-        // }
-    }
-    
-    // Lighting
-    ambientLight(60, 60, 60);
-    directionalLight(255, 255, 255, 0.5, 0.5, -1);
-    
-    // Display cards
-    push();
-    translate(0, 0, 0);
-    scale(viewScale); // Scale using the dynamically calculated value
-    
-    // Handle animation if active
-    if (isAnimating) {
-        updateCardAnimation();
-    }
-    
-    drawCards();
-    pop();
-}
-
-function initCards() {
-    cards = [];
-    originalHeights = [];
-    originalYPositions = [];
-    targetPositions = [];
-    
-    const totalSpacing = (config.stackSpacing + config.cardThickness) * config.numCards;
-    const startZ = -totalSpacing / 2;
-    
-    for (let i = 0; i < config.numCards; i++) {
-        // Initial card position (stack)
-        const initialPos = {
-            x: 0,
-            y: 0,
-            z: startZ + i * (config.stackSpacing + config.cardThickness),
-            width: config.cardWidth,
-            height: config.cardHeight,
-            thickness: config.cardThickness,
-            rotX: 0,
-            rotY: 0,
-            rotZ: 0
+    // Create each group with its assets
+    investmentCategories.forEach(category => {
+        const groupAssets = assetsData[category.name];
+        const group = {
+            name: category.name,
+            color: category.color,
+            cards: []
         };
         
-        cards.push(initialPos);
+        // Add assets to group
+        if (groupAssets) {
+            groupAssets.forEach(asset => {
+                // Calculate thickness based on value
+                const cardValue = parseFloat(asset.value);
+                const valueBasedThickness = 0.1 + (cardValue * 0.0005); // Adjust scaling for large values
+                
+                group.cards.push({
+                    name: asset.name,
+                    value: asset.value,
+                    thickness: valueBasedThickness
+                });
+            });
+        }
         
-        // Also create a duplicate for animation target
-        targetPositions.push({...initialPos});
+        // Add the group
+        cardGroups.push(group);
+    });
+    
+    // Render the groups in the UI
+    renderCardGroups();
+}
+
+// Render card groups in the UI
+function renderCardGroups() {
+    const container = document.getElementById('groupsContainer');
+    container.innerHTML = ''; // Clear the container
+    
+    // Create DOM elements for each group
+    cardGroups.forEach((group, groupIndex) => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'card-group';
+        groupDiv.id = `group-${groupIndex}`;
         
-        originalHeights.push(config.cardHeight);
-        originalYPositions.push(0); // Store original Y positions
+        // Apply group color as a left border
+        groupDiv.style.borderLeftColor = group.color || '#e67e22';
+        
+        // Create group header with title, color picker and actions
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'group-header';
+        
+        // Group title input
+        const groupTitleInput = document.createElement('input');
+        groupTitleInput.type = 'text';
+        groupTitleInput.className = 'group-title-input';
+        groupTitleInput.value = group.name;
+        groupTitleInput.dataset.groupIndex = groupIndex;
+        groupTitleInput.addEventListener('change', function() {
+            updateGroupName(groupIndex, this.value);
+        });
+        
+        // Group color picker
+        const groupColorContainer = document.createElement('div');
+        groupColorContainer.className = 'group-color-container';
+        
+        const groupColorLabel = document.createElement('span');
+        groupColorLabel.className = 'group-color-label';
+        groupColorLabel.textContent = 'Stroke Color:';
+        
+        const groupColorPicker = document.createElement('input');
+        groupColorPicker.type = 'color';
+        groupColorPicker.className = 'group-color-picker';
+        groupColorPicker.value = group.color || '#e67e22';
+        groupColorPicker.dataset.groupIndex = groupIndex;
+        groupColorPicker.addEventListener('change', function() {
+            updateGroupColor(groupIndex, this.value);
+            groupDiv.style.borderLeftColor = this.value;
+        });
+        
+        groupColorContainer.appendChild(groupColorLabel);
+        groupColorContainer.appendChild(groupColorPicker);
+        
+        // Group actions (remove button)
+        const groupActions = document.createElement('div');
+        groupActions.className = 'group-actions';
+        
+        const removeGroupBtn = document.createElement('button');
+        removeGroupBtn.className = 'remove-group-btn';
+        removeGroupBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        removeGroupBtn.dataset.groupIndex = groupIndex;
+        removeGroupBtn.addEventListener('click', function() {
+            removeCardGroup(groupIndex);
+        });
+        
+        groupActions.appendChild(removeGroupBtn);
+        
+        // Assemble group header
+        groupHeader.appendChild(groupTitleInput);
+        groupHeader.appendChild(groupColorContainer);
+        groupHeader.appendChild(groupActions);
+        groupDiv.appendChild(groupHeader);
+        
+        // Create cards container
+        const cardsContainer = document.createElement('div');
+        cardsContainer.className = 'cards-container';
+        
+        // Add cards to the container
+        group.cards.forEach((card, cardIndex) => {
+            const cardItem = document.createElement('div');
+            cardItem.className = 'card-item';
+            
+            // Card name input
+            const cardNameInput = document.createElement('input');
+            cardNameInput.type = 'text';
+            cardNameInput.className = 'card-name-input';
+            cardNameInput.value = card.name;
+            cardNameInput.dataset.groupIndex = groupIndex;
+            cardNameInput.dataset.cardIndex = cardIndex;
+            cardNameInput.addEventListener('change', function() {
+                updateCardName(groupIndex, cardIndex, this.value);
+            });
+            
+            // Card value input
+            const cardValueInput = document.createElement('input');
+            cardValueInput.type = 'number';
+            cardValueInput.className = 'card-value-input';
+            cardValueInput.value = card.value;
+            cardValueInput.min = '0.01';
+            cardValueInput.max = '100000';
+            cardValueInput.step = '0.01';
+            cardValueInput.dataset.groupIndex = groupIndex;
+            cardValueInput.dataset.cardIndex = cardIndex;
+            cardValueInput.addEventListener('change', function() {
+                updateCardValue(groupIndex, cardIndex, this.value);
+            });
+            
+            // Remove card button
+            const removeCardBtn = document.createElement('button');
+            removeCardBtn.className = 'card-remove-btn';
+            removeCardBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeCardBtn.dataset.groupIndex = groupIndex;
+            removeCardBtn.dataset.cardIndex = cardIndex;
+            removeCardBtn.addEventListener('click', function() {
+                removeCard(groupIndex, cardIndex);
+            });
+            
+            // Add elements to card item
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'card-name';
+            nameDiv.appendChild(cardNameInput);
+            
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'card-value';
+            valueDiv.appendChild(cardValueInput);
+            
+            cardItem.appendChild(nameDiv);
+            cardItem.appendChild(valueDiv);
+            cardItem.appendChild(removeCardBtn);
+            cardsContainer.appendChild(cardItem);
+        });
+        
+        groupDiv.appendChild(cardsContainer);
+        
+        // Add card button
+        const addCardBtn = document.createElement('button');
+        addCardBtn.className = 'add-card-btn';
+        addCardBtn.innerHTML = '<i class="fas fa-plus"></i> Add Card';
+        addCardBtn.dataset.groupIndex = groupIndex;
+        addCardBtn.addEventListener('click', function() {
+            addCard(groupIndex);
+        });
+        
+        groupDiv.appendChild(addCardBtn);
+        container.appendChild(groupDiv);
+    });
+}
+
+// Add a new card to a group
+function addCard(groupIndex) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length) {
+        // Default value for new card
+        const defaultValue = "1.00";
+        
+        // Calculate thickness based on value
+        const cardValue = parseFloat(defaultValue);
+        const valueBasedThickness = 0.1 + (cardValue * 0.2);
+        
+        const newCard = {
+            name: `Card ${cardGroups[groupIndex].cards.length + 1}`,
+            value: defaultValue,
+            thickness: valueBasedThickness
+        };
+        
+        cardGroups[groupIndex].cards.push(newCard);
+        renderCardGroups();
+        updateBlockCards(); // Update the 3D visualization
     }
+}
+
+// Remove a card from a group
+function removeCard(groupIndex, cardIndex) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length &&
+        cardIndex >= 0 && cardIndex < cardGroups[groupIndex].cards.length) {
+        // Prevent removing the last card in the last group
+        if (cardGroups.length === 1 && cardGroups[0].cards.length === 1) {
+            alert("Cannot remove the last card from the only group");
+            return;
+        }
+        
+        cardGroups[groupIndex].cards.splice(cardIndex, 1);
+        
+        // If the group is now empty, remove the group
+        if (cardGroups[groupIndex].cards.length === 0) {
+            cardGroups.splice(groupIndex, 1);
+        }
+        
+        renderCardGroups();
+        updateBlockCards(); // Update the 3D visualization
+    }
+}
+
+// Add a new card group
+function addCardGroup() {
+    // Default value for the card
+    const defaultValue = "1.00";
+    
+    // Calculate thickness based on value
+    const cardValue = parseFloat(defaultValue);
+    const valueBasedThickness = 0.1 + (cardValue * 0.2);
+    
+    const newGroup = {
+        name: `Group ${cardGroups.length + 1}`,
+        cards: [{
+            name: 'New Card',
+            value: defaultValue,
+            thickness: valueBasedThickness
+        }]
+    };
+    
+    cardGroups.push(newGroup);
+    renderCardGroups();
+    updateBlockCards(); // Update the 3D visualization
+}
+
+// Remove a card group
+function removeCardGroup(groupIndex) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length) {
+        // Prevent removing the last group
+        if (cardGroups.length === 1) {
+            alert("Cannot remove the last group");
+            return;
+        }
+        
+        cardGroups.splice(groupIndex, 1);
+        renderCardGroups();
+        updateBlockCards(); // Update the 3D visualization
+    }
+}
+
+// Update card name
+function updateCardName(groupIndex, cardIndex, newName) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length &&
+        cardIndex >= 0 && cardIndex < cardGroups[groupIndex].cards.length) {
+        cardGroups[groupIndex].cards[cardIndex].name = newName;
+        updateBlockCards(); // Update the 3D visualization
+    }
+}
+
+// Update card value
+function updateCardValue(groupIndex, cardIndex, newValue) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length &&
+        cardIndex >= 0 && cardIndex < cardGroups[groupIndex].cards.length) {
+        
+        // Ensure value is within valid range and has at most 2 decimal places
+        const value = parseFloat(newValue);
+        if (isNaN(value) || value <= 0) {
+            alert("Please enter a positive number");
+            renderCardGroups(); // Reset the UI
+            return;
+        }
+        
+        // Format to 2 decimal places
+        const formattedValue = value.toFixed(2);
+        cardGroups[groupIndex].cards[cardIndex].value = formattedValue;
+        
+        // Update card thickness based on value with improved scaling
+        const valueBasedThickness = 0.1 + (value * 0.2);
+        cardGroups[groupIndex].cards[cardIndex].thickness = valueBasedThickness;
+        
+        updateBlockCards(); // Update the 3D visualization
+    }
+}
+
+// Update group name
+function updateGroupName(groupIndex, newName) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length) {
+        cardGroups[groupIndex].name = newName;
+        updateBlockCards(); // Update the 3D visualization
+    }
+}
+
+// Update group color
+function updateGroupColor(groupIndex, newColor) {
+    if (groupIndex >= 0 && groupIndex < cardGroups.length) {
+        cardGroups[groupIndex].color = newColor;
+        updateBlockCards(); // Update the 3D visualization
+    }
+}
+
+// Update the 3D cards based on the block configuration
+function updateBlockCards() {
+    // Only update if we're in blocks mode
+    if (config.activeTab !== 'blocks') return;
+    
+    // Clear existing cards
+    cards = [];
+    
+    // First calculate all card thicknesses
+    const cardThicknesses = [];
+    cardGroups.forEach(group => {
+        group.cards.forEach(cardData => {
+            const cardValue = parseFloat(cardData.value) || 1.0;
+            // Much more aggressive scaling - make thickness directly proportional to value
+            // Use a minimum of 0.1 for visibility and scale by card value directly
+            const valueBasedThickness = 0.1 + (cardValue * 0.0005); // Adjusted for larger values
+            cardThicknesses.push(valueBasedThickness);
+        });
+    });
+    
+    // Calculate total depth with proper accounting for each card's thickness and spacing
+    const cardSpacing = config.blockStackSpacing;
+    const groupSpacing = config.groupSpacing;
+    
+    // Calculate total depth (similar to initCards function in Cards tab)
+    let totalDepth = 0;
+    let cardIndex = 0;
+    
+    cardGroups.forEach((group, groupIndex) => {
+        // Add up all card thicknesses in this group
+        group.cards.forEach((cardData, idx) => {
+            totalDepth += cardThicknesses[cardIndex];
+            
+            // Add spacing after each card except the last in a group
+            if (idx < group.cards.length - 1) {
+                totalDepth += cardSpacing;
+            }
+            
+            cardIndex++;
+        });
+        
+        // Add group spacing after each group except the last
+        if (groupIndex < cardGroups.length - 1 && group.cards.length > 0) {
+            totalDepth += groupSpacing;
+        }
+    });
+    
+    // Start position for first card (centered on origin)
+    let currentZ = -totalDepth / 2;
+    cardIndex = 0;
+    
+    // Process each group
+    cardGroups.forEach((group, groupIndex) => {
+        // Process cards within this group
+        group.cards.forEach((cardData, cardWithinGroupIndex) => {
+            // Get pre-calculated thickness
+            const valueBasedThickness = cardThicknesses[cardIndex];
+            
+            // Create card object - all cards are in a single stack at X=0
+            const card = {
+                x: 0,
+                y: 0, // All cards aligned at bottom
+                z: currentZ + (valueBasedThickness / 2), // Position at center of card for correct rendering
+                width: config.blockCardWidth,
+                height: config.blockCardHeight,
+                thickness: valueBasedThickness,
+            rotX: 0,
+            rotY: 0,
+                rotZ: 0,
+                name: cardData.name,
+                value: cardData.value,
+                groupIndex: groupIndex,
+                cardIndex: cardWithinGroupIndex,
+                color: group.color || '#ffffff' // Use group's color or default to white
+            };
+            
+            cards.push(card);
+            
+            // Move to next card position with spacing AFTER the card
+            // This is key: it considers the actual thickness of THIS card
+            currentZ += valueBasedThickness;
+            
+            // Add spacing after the card if it's not the last in its group
+            if (cardWithinGroupIndex < group.cards.length - 1) {
+                currentZ += cardSpacing;
+            }
+            // Add group spacing if this is the last card in a group (but not the last group)
+            else if (groupIndex < cardGroups.length - 1) {
+                currentZ += groupSpacing;
+            }
+            
+            cardIndex++;
+        });
+    });
 }
 
 function drawCards() {
+    // Use different styling based on active tab
+    if (config.activeTab === 'blocks') {
+        // Default card color - always black for blocks
+        const cardCol = color(config.blockCardColor);
+        // Default stroke color if card has no group color
+        const defaultStrokeCol = color(config.blockStrokeColor);
+        
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
+            
+            push();
+            // Position at the card's center
+            translate(card.x, card.y, card.z);
+            rotateX(card.rotX);
+            rotateY(card.rotY);
+            rotateZ(card.rotZ);
+            
+            // Card material and color - always black
+            specularMaterial(cardCol);
+            shininess(20);
+            
+            // Draw card edges with custom stroke - use the group's color
+            const strokeCol = card.color ? color(card.color) : defaultStrokeCol;
+            stroke(
+                red(strokeCol),
+                green(strokeCol),
+                blue(strokeCol),
+                alpha(strokeCol)
+            );
+            strokeWeight(config.blockStrokeWeight);
+            
+            // Draw card as box with thickness based on its value
+            box(card.width, card.height, card.thickness);
+            
+            pop();
+        }
+    } else {
+        // Original card styling for Cards tab
     // Parse the card color
     const cardCol = color(config.cardColor);
     const strokeCol = color(config.strokeColor);
@@ -370,6 +651,7 @@ function drawCards() {
         box(card.width, card.height, card.thickness);
         
         pop();
+        }
     }
 }
 
@@ -646,6 +928,7 @@ function startReverseAnimation() {
     isAnimating = true;
     isReversed = true; // We're going backward
     animationStartTime = millis();
+    inAnimatedState = false; // Mark animation state as transitioning to non-animated
     
     // Update button text
     document.getElementById('animateBtn').textContent = 'Animate';
@@ -686,8 +969,12 @@ function updateCardAnimation() {
                           4 * progress * progress * progress : 
                           1 - Math.pow(-2 * progress + 2, 3) / 2;
     
+    // Only animate if we have valid cards and targets
+    if (cards.length > 0 && targetPositions.length === cards.length) {
     // Update all cards based on progress
     for (let i = 0; i < cards.length; i++) {
+            // Only update if the target position exists
+            if (i < targetPositions.length) {
         // Interpolate between current position and target position
         cards[i].x = lerp(cards[i].x, targetPositions[i].x, 0.05);
         cards[i].y = lerp(cards[i].y, targetPositions[i].y, 0.05);
@@ -697,9 +984,16 @@ function updateCardAnimation() {
         cards[i].rotZ = lerp(cards[i].rotZ, targetPositions[i].rotZ, 0.05);
         
         // For randomHeights mode, also animate the height property
-        if (config.animationMode === 'randomHeights' || 
+                if ((config.activeTab === 'cards' && config.animationMode === 'randomHeights') || 
             (isReversed && isRandomized)) {
             cards[i].height = lerp(cards[i].height, targetPositions[i].height, 0.05);
+                }
+                
+                // For blocks tab, animate thickness based on value
+                if (config.activeTab === 'blocks' && cards[i].thickness !== targetPositions[i].thickness) {
+                    cards[i].thickness = lerp(cards[i].thickness, targetPositions[i].thickness, 0.05);
+                }
+            }
         }
     }
     
@@ -720,6 +1014,8 @@ function updateCardAnimation() {
             // If we reversed from randomized heights, also reset that flag
             if (isRandomized) {
                 isRandomized = false;
+                originalHeights = [];
+                originalYPositions = [];
             }
             
             // Restore original final camera settings if we were using camera transitions
@@ -740,6 +1036,9 @@ function updateCardAnimation() {
                 document.getElementById('finalCameraRotationYInput').value = Math.round(config.finalCameraRotationY);
                 document.getElementById('finalCameraRotationZInput').value = Math.round(config.finalCameraRotationZ);
             }
+        } else {
+            // Mark that we're now in animated state (for forward animations only)
+            inAnimatedState = true;
         }
     }
 }
@@ -845,13 +1144,19 @@ function resetHeights() {
 }
 
 function toggleIsometricView() {
+    // Check which isometric checkbox should be used based on active tab
+    const isometricCheckboxId = config.activeTab === 'blocks' ? 'blockIsometricView' : 'isometricView';
+    
     // Toggle the isometric view setting
-    config.isometricView = document.getElementById('isometricView').checked;
+    config.isometricView = document.getElementById(isometricCheckboxId).checked;
+    
+    // Determine which tab is active to update the appropriate controls
+    const tabSelector = config.activeTab === 'blocks' ? '#blocks-tab ' : '#cards-tab ';
     
     // Ensure appropriate controls are shown/hidden
     if (config.isometricView) {
-        document.querySelector('.isometric-controls').classList.add('visible');
-        document.querySelector('.perspective-controls').classList.remove('visible');
+        document.querySelector(tabSelector + '.isometric-controls').classList.add('visible');
+        document.querySelector(tabSelector + '.perspective-controls').classList.remove('visible');
         
         // Disable auto-rotation in isometric mode
         if (config.autoRotateX || config.autoRotateY || config.autoRotateZ) {
@@ -859,31 +1164,52 @@ function toggleIsometricView() {
             config.autoRotateY = false;
             config.autoRotateZ = false;
             
-            // Update checkboxes
+            // Update checkboxes in both tabs
             document.getElementById('autoRotateX').checked = false;
             document.getElementById('autoRotateY').checked = false;
             document.getElementById('autoRotateZ').checked = false;
+            document.getElementById('blockAutoRotateX').checked = false;
+            document.getElementById('blockAutoRotateY').checked = false;
+            document.getElementById('blockAutoRotateZ').checked = false;
         }
     } else {
-        document.querySelector('.isometric-controls').classList.remove('visible');
-        document.querySelector('.perspective-controls').classList.add('visible');
+        document.querySelector(tabSelector + '.isometric-controls').classList.remove('visible');
+        document.querySelector(tabSelector + '.perspective-controls').classList.add('visible');
     }
+    
+    // Keep checkboxes in sync between tabs
+    document.getElementById('isometricView').checked = config.isometricView;
+    document.getElementById('blockIsometricView').checked = config.isometricView;
 }
 
 function updateIsometricAngles() {
-    config.isoRotationX = parseFloat(document.getElementById('isoRotationX').value) || -35.264;
-    config.isoRotationY = parseFloat(document.getElementById('isoRotationY').value) || -45;
+    // Determine which isometric controls to use based on active tab
+    const isCardsTab = config.activeTab === 'cards';
+    const isoXControl = isCardsTab ? 'isoRotationX' : 'blockIsoRotationX';
+    const isoYControl = isCardsTab ? 'isoRotationY' : 'blockIsoRotationY';
     
-    // Update value displays next to the isometric inputs
-    const isoXDisplay = document.getElementById('isoRotationX').nextElementSibling;
-    const isoYDisplay = document.getElementById('isoRotationY').nextElementSibling;
+    // Get values from the appropriate controls
+    config.isoRotationX = parseFloat(document.getElementById(isoXControl).value) || -35.264;
+    config.isoRotationY = parseFloat(document.getElementById(isoYControl).value) || -45;
     
-    if (isoXDisplay && isoXDisplay.classList.contains('value-display')) {
-        isoXDisplay.textContent = config.isoRotationX.toFixed(1) + '°';
-    }
+    // Update value displays next to the isometric inputs in both tabs
+    updateIsoValueDisplay('isoRotationX', config.isoRotationX);
+    updateIsoValueDisplay('isoRotationY', config.isoRotationY);
+    updateIsoValueDisplay('blockIsoRotationX', config.isoRotationX);
+    updateIsoValueDisplay('blockIsoRotationY', config.isoRotationY);
     
-    if (isoYDisplay && isoYDisplay.classList.contains('value-display')) {
-        isoYDisplay.textContent = config.isoRotationY.toFixed(1) + '°';
+    // Ensure input values are in sync between tabs
+    document.getElementById('isoRotationX').value = config.isoRotationX;
+    document.getElementById('isoRotationY').value = config.isoRotationY;
+    document.getElementById('blockIsoRotationX').value = config.isoRotationX;
+    document.getElementById('blockIsoRotationY').value = config.isoRotationY;
+}
+
+// Helper function to update isometric value displays
+function updateIsoValueDisplay(controlId, value) {
+    const valueDisplay = document.getElementById(controlId).nextElementSibling;
+    if (valueDisplay && valueDisplay.classList.contains('value-display')) {
+        valueDisplay.textContent = value.toFixed(1) + '°';
     }
 }
 
@@ -1112,7 +1438,7 @@ function copySvg() {
 
 // Add event listeners for live updates on all input elements
 function setupLiveUpdates() {
-    // Regular numeric inputs
+    // Regular numeric inputs for Cards tab
     const numericInputs = [
         'numCards', 'wheelRadius', 'cardWidth', 'cardHeight', 
         'cardThickness', 'stackSpacing', 'animationDuration', 'strokeWeight'
@@ -1122,18 +1448,75 @@ function setupLiveUpdates() {
         document.getElementById(id).addEventListener('input', updateFromInputs);
     });
     
-    // Color inputs
+    // Blocks tab numeric inputs
+    const blockNumericInputs = [
+        'groupSpacing', 'blockCardWidth', 
+        'blockCardHeight', 'blockStackSpacing', 'blockStrokeWeight'
+    ];
+    
+    blockNumericInputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', function() {
+            if (config.activeTab === 'blocks') {
+                applyBlocksChanges();
+            }
+        });
+    });
+    
+    // Color inputs for Cards tab
     document.getElementById('cardColor').addEventListener('input', updateFromInputs);
     document.getElementById('strokeColor').addEventListener('input', updateFromInputs);
     
-    // Camera controls with number inputs
-    // Sliders
+    // Color inputs for Blocks tab
+    document.getElementById('blockCardColor').addEventListener('input', function() {
+        if (config.activeTab === 'blocks') {
+            applyBlocksChanges();
+        }
+    });
+    
+    document.getElementById('blockStrokeColor').addEventListener('input', function() {
+        if (config.activeTab === 'blocks') {
+            applyBlocksChanges();
+        }
+    });
+    
+    // Camera controls for Cards tab
     document.getElementById('cameraZoom').addEventListener('input', function() {
         config.cameraZoom = parseFloat(this.value);
         document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+        
+        // Keep blocks tab in sync
+        if (document.getElementById('blockCameraZoom')) {
+            document.getElementById('blockCameraZoom').value = config.cameraZoom;
+            document.getElementById('blockCameraZoomInput').value = config.cameraZoom.toFixed(2);
+        }
+        
         updateCameraSettings();
     });
     
+    // Camera controls for Blocks tab
+    document.getElementById('blockCameraZoom').addEventListener('input', function() {
+        config.cameraZoom = parseFloat(this.value);
+        document.getElementById('blockCameraZoomInput').value = config.cameraZoom.toFixed(2);
+        
+        // Keep cards tab in sync
+        document.getElementById('cameraZoom').value = config.cameraZoom;
+        document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+        
+        updateCameraSettings();
+    });
+    
+    document.getElementById('blockCameraZoomInput').addEventListener('input', function() {
+        config.cameraZoom = parseFloat(this.value);
+        document.getElementById('blockCameraZoom').value = config.cameraZoom;
+        
+        // Keep cards tab in sync
+        document.getElementById('cameraZoom').value = config.cameraZoom;
+        document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+        
+        updateCameraSettings();
+    });
+    
+    // Camera X/Y/Z rotation controls for Cards tab
     document.getElementById('cameraRotationX').addEventListener('input', function() {
         config.cameraRotationX = parseFloat(this.value);
         document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
@@ -1228,22 +1611,50 @@ function setupLiveUpdates() {
     // Auto-rotation toggles
     document.getElementById('autoRotateX').addEventListener('change', function() {
         config.autoRotateX = this.checked;
+        document.getElementById('blockAutoRotateX').checked = config.autoRotateX;
     });
     
     document.getElementById('autoRotateY').addEventListener('change', function() {
         config.autoRotateY = this.checked;
+        document.getElementById('blockAutoRotateY').checked = config.autoRotateY;
     });
     
     document.getElementById('autoRotateZ').addEventListener('change', function() {
         config.autoRotateZ = this.checked;
+        document.getElementById('blockAutoRotateZ').checked = config.autoRotateZ;
     });
     
-    // Isometric inputs with value displays
+    // Auto-rotation toggles for Blocks tab
+    document.getElementById('blockAutoRotateX').addEventListener('change', function() {
+        config.autoRotateX = this.checked;
+        document.getElementById('autoRotateX').checked = config.autoRotateX;
+    });
+    
+    document.getElementById('blockAutoRotateY').addEventListener('change', function() {
+        config.autoRotateY = this.checked;
+        document.getElementById('autoRotateY').checked = config.autoRotateY;
+    });
+    
+    document.getElementById('blockAutoRotateZ').addEventListener('change', function() {
+        config.autoRotateZ = this.checked;
+        document.getElementById('autoRotateZ').checked = config.autoRotateZ;
+    });
+    
+    // Isometric inputs with value displays for Cards tab
     document.getElementById('isoRotationX').addEventListener('input', function() {
         updateIsometricAngles();
     });
     
     document.getElementById('isoRotationY').addEventListener('input', function() {
+        updateIsometricAngles();
+    });
+    
+    // Isometric inputs with value displays for Blocks tab
+    document.getElementById('blockIsoRotationX').addEventListener('input', function() {
+        updateIsometricAngles();
+    });
+    
+    document.getElementById('blockIsoRotationY').addEventListener('input', function() {
         updateIsometricAngles();
     });
     
@@ -1294,8 +1705,73 @@ function initEventListeners() {
     // Reset Cache button
     document.getElementById('resetCacheBtn').addEventListener('click', resetCache);
     
-    // Isometric View toggle
-    document.getElementById('isometricView').addEventListener('change', toggleIsometricView);
+    // Isometric View toggle for Cards tab
+    document.getElementById('isometricView').addEventListener('change', function() {
+        config.isometricView = this.checked;
+        toggleIsometricView();
+        
+        // Keep Blocks tab in sync
+        document.getElementById('blockIsometricView').checked = config.isometricView;
+    });
+    
+    // Isometric View toggle for Blocks tab
+    document.getElementById('blockIsometricView').addEventListener('change', function() {
+        config.isometricView = this.checked;
+        toggleIsometricView();
+        
+        // Keep Cards tab in sync
+        document.getElementById('isometricView').checked = config.isometricView;
+    });
+    
+    // Auto-rotate toggles for Cards tab
+    document.getElementById('autoRotateX').addEventListener('change', function() {
+        config.autoRotateX = this.checked;
+        document.getElementById('blockAutoRotateX').checked = config.autoRotateX;
+    });
+    
+    document.getElementById('autoRotateY').addEventListener('change', function() {
+        config.autoRotateY = this.checked;
+        document.getElementById('blockAutoRotateY').checked = config.autoRotateY;
+    });
+    
+    document.getElementById('autoRotateZ').addEventListener('change', function() {
+        config.autoRotateZ = this.checked;
+        document.getElementById('blockAutoRotateZ').checked = config.autoRotateZ;
+    });
+    
+    // Auto-rotate toggles for Blocks tab
+    document.getElementById('blockAutoRotateX').addEventListener('change', function() {
+        config.autoRotateX = this.checked;
+        document.getElementById('autoRotateX').checked = config.autoRotateX;
+    });
+    
+    document.getElementById('blockAutoRotateY').addEventListener('change', function() {
+        config.autoRotateY = this.checked;
+        document.getElementById('autoRotateY').checked = config.autoRotateY;
+    });
+    
+    document.getElementById('blockAutoRotateZ').addEventListener('change', function() {
+        config.autoRotateZ = this.checked;
+        document.getElementById('autoRotateZ').checked = config.autoRotateZ;
+    });
+    
+    // Tab switching
+    document.getElementById('cardsTabBtn').addEventListener('click', function() {
+        switchTab('cards');
+    });
+    
+    document.getElementById('blocksTabBtn').addEventListener('click', function() {
+        switchTab('blocks');
+    });
+    
+    // Blocks tab functionality
+    document.getElementById('addGroupBtn').addEventListener('click', addCardGroup);
+    
+    document.getElementById('updateBlocksBtn').addEventListener('click', applyBlocksChanges);
+    
+    document.getElementById('resetBlocksBtn').addEventListener('click', resetBlocks);
+    
+    document.getElementById('saveSvgBlocksBtn').addEventListener('click', saveSvg);
     
     // Set up live updates
     setupLiveUpdates();
@@ -1360,5 +1836,349 @@ function updateAutoRotation() {
     // Update rotation input fields if any auto-rotation is active
     if (config.autoRotateX || config.autoRotateY || config.autoRotateZ) {
         updateRotationInputFields();
+    }
+}
+
+// Update the blocks tab UI with current settings
+function updateBlocksUI() {
+    document.getElementById('groupSpacing').value = config.groupSpacing;
+    document.getElementById('blockCardWidth').value = config.blockCardWidth;
+    document.getElementById('blockCardHeight').value = config.blockCardHeight;
+    document.getElementById('blockStackSpacing').value = config.blockStackSpacing;
+    document.getElementById('blockCardColor').value = config.blockCardColor;
+    document.getElementById('blockStrokeWeight').value = config.blockStrokeWeight;
+    document.getElementById('blockStrokeColor').value = config.blockStrokeColor;
+    
+    // Update camera controls
+    document.getElementById('blockCameraZoom').value = config.cameraZoom;
+    document.getElementById('blockCameraZoomInput').value = config.cameraZoom.toFixed(2);
+    
+    // Render the card groups
+    renderCardGroups();
+}
+
+// Apply changes from the blocks tab UI
+function applyBlocksChanges() {
+    config.groupSpacing = parseFloat(document.getElementById('groupSpacing').value) || 3;
+    config.blockCardWidth = parseFloat(document.getElementById('blockCardWidth').value) || 20;
+    config.blockCardHeight = parseFloat(document.getElementById('blockCardHeight').value) || 30;
+    config.blockStackSpacing = parseFloat(document.getElementById('blockStackSpacing').value) || 1;
+    config.blockCardColor = document.getElementById('blockCardColor').value || '#000000';
+    config.blockStrokeWeight = parseFloat(document.getElementById('blockStrokeWeight').value) || 1.0;
+    config.blockStrokeColor = document.getElementById('blockStrokeColor').value || '#FFFFFF';
+    
+    // Get zoom from blocks tab camera controls
+    const blockZoom = document.getElementById('blockCameraZoom');
+    if (blockZoom) {
+        config.cameraZoom = parseFloat(blockZoom.value) || 1.0;
+        document.getElementById('blockCameraZoomInput').value = config.cameraZoom.toFixed(2);
+        
+        // Keep the cards tab in sync
+        document.getElementById('cameraZoom').value = config.cameraZoom;
+        document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+    }
+    
+    updateBlockCards();
+}
+
+// Reset blocks to default settings
+function resetBlocks() {
+    // Reset configuration values
+    config.groupSpacing = 3;
+    config.blockCardWidth = 20;
+    config.blockCardHeight = 30;
+    config.blockStackSpacing = 1;
+    config.blockCardColor = '#000000';
+    config.blockStrokeWeight = 1.0;
+    config.blockStrokeColor = '#FFFFFF';
+    
+    // Reset groups to default
+    initCardGroups();
+    
+    // Update UI with reset values
+    updateBlocksUI();
+    
+    // Update 3D visualization
+    updateBlockCards();
+}
+
+// Switch between tabs
+function switchTab(tabName) {
+    // Update active tab in config
+    config.activeTab = tabName;
+    
+    // Update UI
+    const cardTabBtn = document.getElementById('cardsTabBtn');
+    const blocksTabBtn = document.getElementById('blocksTabBtn');
+    const cardsTab = document.getElementById('cards-tab');
+    const blocksTab = document.getElementById('blocks-tab');
+    
+    if (tabName === 'cards') {
+        cardTabBtn.classList.add('active');
+        blocksTabBtn.classList.remove('active');
+        cardsTab.classList.add('active');
+        blocksTab.classList.remove('active');
+        
+        // Initialize cards for cards tab
+        initCards();
+        
+        // Sync camera settings
+        updateCameraSettings();
+    } else {
+        cardTabBtn.classList.remove('active');
+        blocksTabBtn.classList.add('active');
+        cardsTab.classList.remove('active');
+        blocksTab.classList.add('active');
+        
+        // Update cards for blocks tab
+        updateBlockCards();
+        
+        // Sync all camera settings to blocks tab
+        document.getElementById('blockCameraZoom').value = config.cameraZoom;
+        document.getElementById('blockCameraZoomInput').value = config.cameraZoom.toFixed(2);
+        document.getElementById('blockIsometricView').checked = config.isometricView;
+        document.getElementById('blockAutoRotateX').checked = config.autoRotateX;
+        document.getElementById('blockAutoRotateY').checked = config.autoRotateY;
+        document.getElementById('blockAutoRotateZ').checked = config.autoRotateZ;
+    }
+}
+
+function setupOrbitControlListeners() {
+    // Mouse down event on canvas
+    canvas.mousePressed(canvasMousePressed);
+    
+    // Mouse move event (anywhere)
+    document.addEventListener('mousemove', documentMouseMoved);
+    
+    // Mouse up event (anywhere)
+    document.addEventListener('mouseup', documentMouseReleased);
+    
+    // Mouse wheel event for zoom
+    canvas.mouseWheel(canvasMouseWheel);
+}
+
+function canvasMousePressed() {
+    // Only register left mouse button
+    if (mouseButton === LEFT) {
+        mouseDown = true;
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        isDragging = false;
+    }
+}
+
+function documentMouseMoved(e) {
+    if (!mouseDown || config.isometricView) return;
+    
+    // Detect if we're actually dragging (not just a click)
+    if (Math.abs(mouseX - lastMouseX) > 2 || Math.abs(mouseY - lastMouseY) > 2) {
+        isDragging = true;
+    }
+    
+    if (isDragging) {
+        // Calculate drag distance
+        const deltaX = mouseX - lastMouseX;
+        const deltaY = mouseY - lastMouseY;
+        
+        // Update camera rotation based on drag
+        // Horizontal drag affects Y rotation
+        config.cameraRotationY += deltaX * 0.5;
+        
+        // Vertical drag affects X rotation
+        config.cameraRotationX += deltaY * 0.5;
+        
+        // Normalize angles to -180 to 180 range
+        config.cameraRotationY = normalizeDegrees(config.cameraRotationY);
+        config.cameraRotationX = normalizeDegrees(config.cameraRotationX);
+        
+        // Update the input fields without causing a recursive update
+        updateRotationInputFields();
+        
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+    }
+}
+
+function documentMouseReleased() {
+    mouseDown = false;
+    isDragging = false;
+}
+
+function canvasMouseWheel(event) {
+    if (config.isometricView) return;
+    
+    // Adjust camera zoom with mouse wheel
+    config.cameraZoom -= event.delta * 0.001;
+    
+    // Limit zoom values
+    config.cameraZoom = constrain(config.cameraZoom, 0.1, 5);
+    
+    // Update zoom input field
+    updateZoomInputField();
+    
+    // Prevent default behavior (page scrolling)
+    return false;
+}
+
+function normalizeDegrees(angle) {
+    // Keep angle between -180 and 180
+    angle = angle % 360;
+    if (angle > 180) angle -= 360;
+    if (angle < -180) angle += 360;
+    return angle;
+}
+
+function updateRotationInputFields() {
+    // Prevent recursive updates
+    if (isUpdating) return;
+    isUpdating = true;
+    
+    // Update input fields with current rotation values
+    const xRotInput = document.getElementById('cameraRotationX');
+    const yRotInput = document.getElementById('cameraRotationY');
+    const zRotInput = document.getElementById('cameraRotationZ');
+    
+    // Update range sliders
+    xRotInput.value = Math.round(config.cameraRotationX);
+    yRotInput.value = Math.round(config.cameraRotationY);
+    zRotInput.value = Math.round(config.cameraRotationZ);
+    
+    // Update number inputs
+    document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
+    document.getElementById('cameraRotationYInput').value = Math.round(config.cameraRotationY);
+    document.getElementById('cameraRotationZInput').value = Math.round(config.cameraRotationZ);
+    
+    isUpdating = false;
+}
+
+function updateZoomInputField() {
+    // Prevent recursive updates
+    if (isUpdating) return;
+    isUpdating = true;
+    
+    // Update zoom input field
+    const zoomInput = document.getElementById('cameraZoom');
+    zoomInput.value = config.cameraZoom.toFixed(2);
+    
+    // Update number input
+    document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+    
+    isUpdating = false;
+}
+
+function windowResized() {
+    updateCanvasSize();
+    resizeCanvas(canvasWidth, canvasHeight);
+}
+
+function updateCanvasSize() {
+    const container = document.getElementById('canvas-container');
+    canvasWidth = container.clientWidth;
+    canvasHeight = container.clientHeight;
+}
+
+function updateViewScale() {
+    // Dynamically calculate the view scale based on the number of cards and spacing
+    // This ensures the entire stack is visible at any spacing value
+    const stackLength = config.numCards * config.stackSpacing;
+    const baseScale = 5; // Default scale for spacing = 1
+    
+    // Scale inversely with spacing but with a reasonable limit
+    // Higher spacing values need smaller scale values
+    viewScale = baseScale * (1 / sqrt(config.stackSpacing));
+    
+    // Adjust further if we have a lot of cards
+    if (config.numCards > 100) {
+        viewScale *= 100 / config.numCards;
+    }
+    
+    // Apply user zoom factor
+    viewScale *= config.cameraZoom;
+    
+    // Ensure scale stays within reasonable bounds
+    viewScale = constrain(viewScale, 0.5, 20);
+}
+
+function draw() {
+    background(0);
+    
+    // Update the view scale dynamically based on current config
+    updateViewScale();
+    
+    // Update camera rotations if auto-rotate is enabled
+    updateAutoRotation();
+    
+    // Decide camera type based on isometric mode
+    if (config.isometricView) {
+        // Fixed isometric view
+        // Reset camera perspective
+        ortho(-width/2, width/2, -height/2, height/2, -2000, 2000);
+        
+        // Set isometric angle based on user inputs
+        rotateX(radians(config.isoRotationX));
+        rotateY(radians(config.isoRotationY));
+    } else {
+        // Default perspective with controls
+        perspective();
+        
+        // Apply user-defined camera rotation
+        rotateX(radians(config.cameraRotationX));
+        rotateY(radians(config.cameraRotationY));
+        rotateZ(radians(config.cameraRotationZ));
+        
+        // We're now using our custom orbit control instead of built-in
+        // if (config.enableOrbitControl) {
+        //     orbitControl();
+        // }
+    }
+    
+    // Lighting
+    ambientLight(60, 60, 60);
+    directionalLight(255, 255, 255, 0.5, 0.5, -1);
+    
+    // Display cards
+    push();
+    translate(0, 0, 0);
+    scale(viewScale); // Scale using the dynamically calculated value
+    
+    // Handle animation if active
+    if (isAnimating) {
+        updateCardAnimation();
+    }
+    
+    drawCards();
+    pop();
+}
+
+function initCards() {
+    cards = [];
+    originalHeights = [];
+    originalYPositions = [];
+    targetPositions = [];
+    
+    const totalSpacing = (config.stackSpacing + config.cardThickness) * config.numCards;
+    const startZ = -totalSpacing / 2;
+    
+    for (let i = 0; i < config.numCards; i++) {
+        // Initial card position (stack)
+        const initialPos = {
+            x: 0,
+            y: 0,
+            z: startZ + i * (config.stackSpacing + config.cardThickness),
+            width: config.cardWidth,
+            height: config.cardHeight,
+            thickness: config.cardThickness,
+            rotX: 0,
+            rotY: 0,
+            rotZ: 0
+        };
+        
+        cards.push(initialPos);
+        
+        // Also create a duplicate for animation target
+        targetPositions.push({...initialPos});
+        
+        originalHeights.push(config.cardHeight);
+        originalYPositions.push(0); // Store original Y positions
     }
 } 
