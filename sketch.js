@@ -20,6 +20,12 @@ let config = {
     cameraRotationY: 0,
     cameraRotationZ: 0,
     enableOrbitControl: true,
+    // Final camera settings (for transitions)
+    enableCameraTransition: false,
+    finalCameraZoom: 1.0,
+    finalCameraRotationX: 45,
+    finalCameraRotationY: 0,
+    finalCameraRotationZ: 0,
     // Auto-rotation settings
     autoRotateX: false,
     autoRotateY: false,
@@ -39,6 +45,10 @@ let isAnimating = false;
 let animationStartTime = 0;
 let isReversed = false; // Track if we're in reverse animation
 let inAnimatedState = false; // Track if cards are in animated state
+
+// Camera transition state
+let initialCameraState = {};
+let originalFinalCameraState = {}; // Store original final camera settings
 
 // Canvas sizing
 let canvasWidth;
@@ -180,14 +190,15 @@ function updateRotationInputFields() {
     const yRotInput = document.getElementById('cameraRotationY');
     const zRotInput = document.getElementById('cameraRotationZ');
     
+    // Update range sliders
     xRotInput.value = Math.round(config.cameraRotationX);
     yRotInput.value = Math.round(config.cameraRotationY);
     zRotInput.value = Math.round(config.cameraRotationZ);
     
-    // Update value displays
-    document.getElementById('cameraRotationXValue').textContent = Math.round(config.cameraRotationX) + '°';
-    document.getElementById('cameraRotationYValue').textContent = Math.round(config.cameraRotationY) + '°';
-    document.getElementById('cameraRotationZValue').textContent = Math.round(config.cameraRotationZ) + '°';
+    // Update number inputs
+    document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
+    document.getElementById('cameraRotationYInput').value = Math.round(config.cameraRotationY);
+    document.getElementById('cameraRotationZInput').value = Math.round(config.cameraRotationZ);
     
     isUpdating = false;
 }
@@ -201,8 +212,8 @@ function updateZoomInputField() {
     const zoomInput = document.getElementById('cameraZoom');
     zoomInput.value = config.cameraZoom.toFixed(2);
     
-    // Update value display
-    document.getElementById('cameraZoomValue').textContent = config.cameraZoom.toFixed(2);
+    // Update number input
+    document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
     
     isUpdating = false;
 }
@@ -521,32 +532,15 @@ function startAnimation() {
     // Calculate target positions based on selected mode
     calculateTargetPositions(config.animationMode);
     
-    // If wheel mode, adjust camera settings but respect the isometric view setting
-    if (config.animationMode === 'wheel') {
-        // Store the current isometric view setting
-        const isIsometric = config.isometricView;
+    // Store initial camera state if we're using camera transitions
+    if (config.enableCameraTransition) {
+        storeInitialCameraState();
         
-        // Adjust camera settings based on current view mode
-        if (!isIsometric) {
-            // Only modify camera values for perspective view
-            // For isometric view, we'll keep whatever values the user has set
-            
-            // For perspective view, set optimal camera angles
-            config.cameraZoom = 1.0;
-            config.cameraRotationX = 45;  // Look from above at a 45-degree angle
-            config.cameraRotationY = 0;
-            config.cameraRotationZ = 0;
-            
-            // Update UI sliders
-            document.getElementById('cameraZoom').value = config.cameraZoom;
-            document.getElementById('cameraRotationX').value = config.cameraRotationX;
-            document.getElementById('cameraRotationY').value = config.cameraRotationY;
-            document.getElementById('cameraRotationZ').value = config.cameraRotationZ;
-            
-            // Update value displays
-            updateCameraSettings();
-        }
-    } else if (config.animationMode === 'randomHeights') {
+        // Also store the original final camera settings
+        storeFinalCameraState();
+    }
+    
+    if (config.animationMode === 'randomHeights') {
         // Set flag that we are now using randomized heights
         isRandomized = true;
     }
@@ -559,6 +553,26 @@ function startAnimation() {
     
     // Update button text
     document.getElementById('animateBtn').textContent = 'Reverse';
+}
+
+function storeInitialCameraState() {
+    // Store the current camera settings as the initial state
+    initialCameraState = {
+        zoom: config.cameraZoom,
+        rotationX: config.cameraRotationX,
+        rotationY: config.cameraRotationY,
+        rotationZ: config.cameraRotationZ
+    };
+}
+
+function storeFinalCameraState() {
+    // Store the final camera settings
+    originalFinalCameraState = {
+        zoom: config.finalCameraZoom,
+        rotationX: config.finalCameraRotationX,
+        rotationY: config.finalCameraRotationY,
+        rotationZ: config.finalCameraRotationZ
+    };
 }
 
 function startReverseAnimation() {
@@ -590,6 +604,44 @@ function startReverseAnimation() {
         targetPositions.push(initialPos);
     }
     
+    // If we're using camera transitions, swap the final and initial values for reverse
+    if (config.enableCameraTransition) {
+        // Store current values as target for reverse animation
+        const currentState = {
+            zoom: config.cameraZoom,
+            rotationX: config.cameraRotationX,
+            rotationY: config.cameraRotationY,
+            rotationZ: config.cameraRotationZ
+        };
+        
+        // Set current camera to match final values
+        config.cameraZoom = config.finalCameraZoom;
+        config.cameraRotationX = config.finalCameraRotationX;
+        config.cameraRotationY = config.finalCameraRotationY;
+        config.cameraRotationZ = config.finalCameraRotationZ;
+        
+        // Set reverse target to be the initial camera values
+        // But DON'T modify the stored final camera values
+        const reverseFinalValues = {
+            zoom: initialCameraState.zoom,
+            rotationX: initialCameraState.rotationX,
+            rotationY: initialCameraState.rotationY,
+            rotationZ: initialCameraState.rotationZ
+        };
+        
+        // Update the initial state reference for the reverse animation
+        initialCameraState = currentState;
+        
+        // Set temporary final values for the reverse animation
+        config.finalCameraZoom = reverseFinalValues.zoom;
+        config.finalCameraRotationX = reverseFinalValues.rotationX;
+        config.finalCameraRotationY = reverseFinalValues.rotationY;
+        config.finalCameraRotationZ = reverseFinalValues.rotationZ;
+        
+        // Update UI to reflect the current state
+        updateCameraInputFields();
+    }
+    
     // Start reverse animation
     isAnimating = true;
     isReversed = true; // We're going backward
@@ -597,6 +649,29 @@ function startReverseAnimation() {
     
     // Update button text
     document.getElementById('animateBtn').textContent = 'Animate';
+}
+
+function updateCameraInputFields() {
+    // Update input values
+    document.getElementById('cameraZoom').value = config.cameraZoom;
+    document.getElementById('cameraRotationX').value = config.cameraRotationX;
+    document.getElementById('cameraRotationY').value = config.cameraRotationY;
+    document.getElementById('cameraRotationZ').value = config.cameraRotationZ;
+    
+    document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+    document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
+    document.getElementById('cameraRotationYInput').value = Math.round(config.cameraRotationY);
+    document.getElementById('cameraRotationZInput').value = Math.round(config.cameraRotationZ);
+    
+    document.getElementById('finalCameraZoom').value = config.finalCameraZoom;
+    document.getElementById('finalCameraRotationX').value = config.finalCameraRotationX;
+    document.getElementById('finalCameraRotationY').value = config.finalCameraRotationY;
+    document.getElementById('finalCameraRotationZ').value = config.finalCameraRotationZ;
+    
+    document.getElementById('finalCameraZoomInput').value = config.finalCameraZoom.toFixed(2);
+    document.getElementById('finalCameraRotationXInput').value = Math.round(config.finalCameraRotationX);
+    document.getElementById('finalCameraRotationYInput').value = Math.round(config.finalCameraRotationY);
+    document.getElementById('finalCameraRotationZInput').value = Math.round(config.finalCameraRotationZ);
 }
 
 function updateCardAnimation() {
@@ -628,6 +703,11 @@ function updateCardAnimation() {
         }
     }
     
+    // Update camera if transitions are enabled
+    if (config.enableCameraTransition) {
+        updateCameraAnimation(easedProgress);
+    }
+    
     // End animation if complete
     if (progress >= 1) {
         isAnimating = false;
@@ -641,8 +721,58 @@ function updateCardAnimation() {
             if (isRandomized) {
                 isRandomized = false;
             }
+            
+            // Restore original final camera settings if we were using camera transitions
+            if (config.enableCameraTransition && originalFinalCameraState) {
+                config.finalCameraZoom = originalFinalCameraState.zoom;
+                config.finalCameraRotationX = originalFinalCameraState.rotationX;
+                config.finalCameraRotationY = originalFinalCameraState.rotationY;
+                config.finalCameraRotationZ = originalFinalCameraState.rotationZ;
+                
+                // Update UI to show original final values
+                document.getElementById('finalCameraZoom').value = config.finalCameraZoom;
+                document.getElementById('finalCameraRotationX').value = config.finalCameraRotationX;
+                document.getElementById('finalCameraRotationY').value = config.finalCameraRotationY;
+                document.getElementById('finalCameraRotationZ').value = config.finalCameraRotationZ;
+                
+                document.getElementById('finalCameraZoomInput').value = config.finalCameraZoom.toFixed(2);
+                document.getElementById('finalCameraRotationXInput').value = Math.round(config.finalCameraRotationX);
+                document.getElementById('finalCameraRotationYInput').value = Math.round(config.finalCameraRotationY);
+                document.getElementById('finalCameraRotationZInput').value = Math.round(config.finalCameraRotationZ);
+            }
         }
     }
+}
+
+function updateCameraAnimation(progress) {
+    if (!config.enableCameraTransition) return;
+    
+    // Interpolate camera settings between initial and final values
+    config.cameraZoom = lerp(initialCameraState.zoom, config.finalCameraZoom, progress);
+    config.cameraRotationX = lerpAngle(initialCameraState.rotationX, config.finalCameraRotationX, progress);
+    config.cameraRotationY = lerpAngle(initialCameraState.rotationY, config.finalCameraRotationY, progress);
+    config.cameraRotationZ = lerpAngle(initialCameraState.rotationZ, config.finalCameraRotationZ, progress);
+    
+    // Update UI to reflect current values
+    updateRotationInputFields();
+    updateZoomInputField();
+}
+
+// Helper function to interpolate angles correctly
+function lerpAngle(start, end, amount) {
+    // Normalize angles to (-180, 180) range
+    start = normalizeDegrees(start);
+    end = normalizeDegrees(end);
+    
+    // Find the shortest path between angles
+    let diff = end - start;
+    
+    // Adjust for shortest path
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    
+    // Interpolate along the shortest path
+    return start + diff * amount;
 }
 
 function randomizeHeights() {
@@ -763,11 +893,11 @@ function updateCameraSettings() {
     config.cameraRotationY = parseFloat(document.getElementById('cameraRotationY').value) || 0;
     config.cameraRotationZ = parseFloat(document.getElementById('cameraRotationZ').value) || 0;
     
-    // Update value displays
-    document.getElementById('cameraZoomValue').textContent = config.cameraZoom.toFixed(2);
-    document.getElementById('cameraRotationXValue').textContent = Math.round(config.cameraRotationX) + '°';
-    document.getElementById('cameraRotationYValue').textContent = Math.round(config.cameraRotationY) + '°';
-    document.getElementById('cameraRotationZValue').textContent = Math.round(config.cameraRotationZ) + '°';
+    // Update all input fields
+    document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
+    document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
+    document.getElementById('cameraRotationYInput').value = Math.round(config.cameraRotationY);
+    document.getElementById('cameraRotationZInput').value = Math.round(config.cameraRotationZ);
 }
 
 function updateFromInputs() {
@@ -806,6 +936,13 @@ function updateFromInputs() {
     config.cameraRotationX = parseFloat(document.getElementById('cameraRotationX').value) || 0;
     config.cameraRotationY = parseFloat(document.getElementById('cameraRotationY').value) || 0;
     config.cameraRotationZ = parseFloat(document.getElementById('cameraRotationZ').value) || 0;
+    
+    // Update camera transition settings
+    config.enableCameraTransition = document.getElementById('enableCameraTransition').checked;
+    config.finalCameraZoom = parseFloat(document.getElementById('finalCameraZoom').value) || 1.0;
+    config.finalCameraRotationX = parseFloat(document.getElementById('finalCameraRotationX').value) || 45;
+    config.finalCameraRotationY = parseFloat(document.getElementById('finalCameraRotationY').value) || 0;
+    config.finalCameraRotationZ = parseFloat(document.getElementById('finalCameraRotationZ').value) || 0;
     
     // Reinitialize cards if needed
     if (needsReinitialize) {
@@ -989,21 +1126,103 @@ function setupLiveUpdates() {
     document.getElementById('cardColor').addEventListener('input', updateFromInputs);
     document.getElementById('strokeColor').addEventListener('input', updateFromInputs);
     
-    // Camera controls with value displays
+    // Camera controls with number inputs
+    // Sliders
     document.getElementById('cameraZoom').addEventListener('input', function() {
+        config.cameraZoom = parseFloat(this.value);
+        document.getElementById('cameraZoomInput').value = config.cameraZoom.toFixed(2);
         updateCameraSettings();
     });
     
     document.getElementById('cameraRotationX').addEventListener('input', function() {
+        config.cameraRotationX = parseFloat(this.value);
+        document.getElementById('cameraRotationXInput').value = Math.round(config.cameraRotationX);
         updateCameraSettings();
     });
     
     document.getElementById('cameraRotationY').addEventListener('input', function() {
+        config.cameraRotationY = parseFloat(this.value);
+        document.getElementById('cameraRotationYInput').value = Math.round(config.cameraRotationY);
         updateCameraSettings();
     });
     
     document.getElementById('cameraRotationZ').addEventListener('input', function() {
+        config.cameraRotationZ = parseFloat(this.value);
+        document.getElementById('cameraRotationZInput').value = Math.round(config.cameraRotationZ);
         updateCameraSettings();
+    });
+    
+    // Number inputs
+    document.getElementById('cameraZoomInput').addEventListener('input', function() {
+        config.cameraZoom = parseFloat(this.value);
+        document.getElementById('cameraZoom').value = config.cameraZoom;
+        updateCameraSettings();
+    });
+    
+    document.getElementById('cameraRotationXInput').addEventListener('input', function() {
+        config.cameraRotationX = parseFloat(this.value);
+        document.getElementById('cameraRotationX').value = config.cameraRotationX;
+        updateCameraSettings();
+    });
+    
+    document.getElementById('cameraRotationYInput').addEventListener('input', function() {
+        config.cameraRotationY = parseFloat(this.value);
+        document.getElementById('cameraRotationY').value = config.cameraRotationY;
+        updateCameraSettings();
+    });
+    
+    document.getElementById('cameraRotationZInput').addEventListener('input', function() {
+        config.cameraRotationZ = parseFloat(this.value);
+        document.getElementById('cameraRotationZ').value = config.cameraRotationZ;
+        updateCameraSettings();
+    });
+    
+    // Final camera settings controls
+    // Sliders
+    document.getElementById('finalCameraZoom').addEventListener('input', function() {
+        config.finalCameraZoom = parseFloat(this.value) || 1.0;
+        document.getElementById('finalCameraZoomInput').value = config.finalCameraZoom.toFixed(2);
+    });
+    
+    document.getElementById('finalCameraRotationX').addEventListener('input', function() {
+        config.finalCameraRotationX = parseFloat(this.value) || 45;
+        document.getElementById('finalCameraRotationXInput').value = Math.round(config.finalCameraRotationX);
+    });
+    
+    document.getElementById('finalCameraRotationY').addEventListener('input', function() {
+        config.finalCameraRotationY = parseFloat(this.value) || 0;
+        document.getElementById('finalCameraRotationYInput').value = Math.round(config.finalCameraRotationY);
+    });
+    
+    document.getElementById('finalCameraRotationZ').addEventListener('input', function() {
+        config.finalCameraRotationZ = parseFloat(this.value) || 0;
+        document.getElementById('finalCameraRotationZInput').value = Math.round(config.finalCameraRotationZ);
+    });
+    
+    // Number inputs
+    document.getElementById('finalCameraZoomInput').addEventListener('input', function() {
+        config.finalCameraZoom = parseFloat(this.value) || 1.0;
+        document.getElementById('finalCameraZoom').value = config.finalCameraZoom;
+    });
+    
+    document.getElementById('finalCameraRotationXInput').addEventListener('input', function() {
+        config.finalCameraRotationX = parseFloat(this.value) || 45;
+        document.getElementById('finalCameraRotationX').value = config.finalCameraRotationX;
+    });
+    
+    document.getElementById('finalCameraRotationYInput').addEventListener('input', function() {
+        config.finalCameraRotationY = parseFloat(this.value) || 0;
+        document.getElementById('finalCameraRotationY').value = config.finalCameraRotationY;
+    });
+    
+    document.getElementById('finalCameraRotationZInput').addEventListener('input', function() {
+        config.finalCameraRotationZ = parseFloat(this.value) || 0;
+        document.getElementById('finalCameraRotationZ').value = config.finalCameraRotationZ;
+    });
+    
+    // Camera transition toggle
+    document.getElementById('enableCameraTransition').addEventListener('change', function() {
+        config.enableCameraTransition = this.checked;
     });
     
     // Auto-rotation toggles
