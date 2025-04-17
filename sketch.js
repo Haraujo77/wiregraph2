@@ -19,7 +19,14 @@ let config = {
     cameraRotationX: 0,
     cameraRotationY: 0,
     cameraRotationZ: 0,
-    enableOrbitControl: true
+    enableOrbitControl: true,
+    // Auto-rotation settings
+    autoRotateX: false,
+    autoRotateY: false,
+    autoRotateZ: false,
+    rotationSpeedX: 0.5,
+    rotationSpeedY: 0.5,
+    rotationSpeedZ: 0.5
 };
 
 // Cards array and states
@@ -171,13 +178,16 @@ function updateRotationInputFields() {
     // Update input fields with current rotation values
     const xRotInput = document.getElementById('cameraRotationX');
     const yRotInput = document.getElementById('cameraRotationY');
+    const zRotInput = document.getElementById('cameraRotationZ');
     
     xRotInput.value = Math.round(config.cameraRotationX);
     yRotInput.value = Math.round(config.cameraRotationY);
+    zRotInput.value = Math.round(config.cameraRotationZ);
     
     // Update value displays
     document.getElementById('cameraRotationXValue').textContent = Math.round(config.cameraRotationX) + '°';
     document.getElementById('cameraRotationYValue').textContent = Math.round(config.cameraRotationY) + '°';
+    document.getElementById('cameraRotationZValue').textContent = Math.round(config.cameraRotationZ) + '°';
     
     isUpdating = false;
 }
@@ -235,6 +245,9 @@ function draw() {
     
     // Update the view scale dynamically based on current config
     updateViewScale();
+    
+    // Update camera rotations if auto-rotate is enabled
+    updateAutoRotation();
     
     // Decide camera type based on isometric mode
     if (config.isometricView) {
@@ -702,18 +715,28 @@ function resetHeights() {
 }
 
 function toggleIsometricView() {
+    // Toggle the isometric view setting
     config.isometricView = document.getElementById('isometricView').checked;
     
-    // Show/hide isometric controls
-    const isoControls = document.querySelector('.isometric-controls');
-    const perspControls = document.querySelector('.perspective-controls');
-    
+    // Ensure appropriate controls are shown/hidden
     if (config.isometricView) {
-        isoControls.classList.add('visible');
-        perspControls.classList.remove('visible');
+        document.querySelector('.isometric-controls').classList.add('visible');
+        document.querySelector('.perspective-controls').classList.remove('visible');
+        
+        // Disable auto-rotation in isometric mode
+        if (config.autoRotateX || config.autoRotateY || config.autoRotateZ) {
+            config.autoRotateX = false;
+            config.autoRotateY = false;
+            config.autoRotateZ = false;
+            
+            // Update checkboxes
+            document.getElementById('autoRotateX').checked = false;
+            document.getElementById('autoRotateY').checked = false;
+            document.getElementById('autoRotateZ').checked = false;
+        }
     } else {
-        isoControls.classList.remove('visible');
-        perspControls.classList.add('visible');
+        document.querySelector('.isometric-controls').classList.remove('visible');
+        document.querySelector('.perspective-controls').classList.add('visible');
     }
 }
 
@@ -983,6 +1006,19 @@ function setupLiveUpdates() {
         updateCameraSettings();
     });
     
+    // Auto-rotation toggles
+    document.getElementById('autoRotateX').addEventListener('change', function() {
+        config.autoRotateX = this.checked;
+    });
+    
+    document.getElementById('autoRotateY').addEventListener('change', function() {
+        config.autoRotateY = this.checked;
+    });
+    
+    document.getElementById('autoRotateZ').addEventListener('change', function() {
+        config.autoRotateZ = this.checked;
+    });
+    
     // Isometric inputs with value displays
     document.getElementById('isoRotationX').addEventListener('input', function() {
         updateIsometricAngles();
@@ -1081,4 +1117,29 @@ function resetCache() {
     setTimeout(() => {
         window.location.href = reloadUrl;
     }, 500);
+}
+
+// Function to update auto-rotation
+function updateAutoRotation() {
+    if (config.isometricView) return; // Don't auto-rotate in isometric mode
+    
+    if (config.autoRotateX) {
+        config.cameraRotationX += config.rotationSpeedX;
+        if (config.cameraRotationX > 180) config.cameraRotationX = -180;
+    }
+    
+    if (config.autoRotateY) {
+        config.cameraRotationY += config.rotationSpeedY;
+        if (config.cameraRotationY > 180) config.cameraRotationY = -180;
+    }
+    
+    if (config.autoRotateZ) {
+        config.cameraRotationZ += config.rotationSpeedZ;
+        if (config.cameraRotationZ > 180) config.cameraRotationZ = -180;
+    }
+    
+    // Update rotation input fields if any auto-rotation is active
+    if (config.autoRotateX || config.autoRotateY || config.autoRotateZ) {
+        updateRotationInputFields();
+    }
 } 
