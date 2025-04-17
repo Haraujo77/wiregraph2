@@ -88,7 +88,7 @@
                     <label for="cameraZoom">Camera Zoom:</label>
                     <div class="slider-with-value">
                         <input type="range" id="cameraZoom" value="1" min="0.1" max="2" step="0.05">
-                        <span class="value-display" id="cameraZoomValue">1.00</span>
+                        <input type="number" id="cameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
                     </div>
                 </div>
                 
@@ -149,7 +149,7 @@
                         <label for="cameraRotationX">Camera X Rotation:</label>
                         <div class="slider-with-value">
                             <input type="range" id="cameraRotationX" value="0" min="-180" max="180" step="1">
-                            <span class="value-display" id="cameraRotationXValue">0°</span>
+                            <input type="number" id="cameraRotationXInput" value="0" min="-180" max="180" step="1" class="value-input">
                         </div>
                     </div>
                     
@@ -157,7 +157,7 @@
                         <label for="cameraRotationY">Camera Y Rotation:</label>
                         <div class="slider-with-value">
                             <input type="range" id="cameraRotationY" value="0" min="-180" max="180" step="1">
-                            <span class="value-display" id="cameraRotationYValue">0°</span>
+                            <input type="number" id="cameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
                         </div>
                     </div>
                     
@@ -165,7 +165,51 @@
                         <label for="cameraRotationZ">Camera Z Rotation:</label>
                         <div class="slider-with-value">
                             <input type="range" id="cameraRotationZ" value="0" min="-180" max="180" step="1">
-                            <span class="value-display" id="cameraRotationZValue">0°</span>
+                            <input type="number" id="cameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group toggle-switch">
+                        <label for="enableCameraTransition">Camera Transition:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="enableCameraTransition">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="camera-transition-controls" style="display: none;">
+                        <div class="section-header">Final Camera Position</div>
+                        
+                        <div class="form-group">
+                            <label for="finalCameraZoom">Final Zoom:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="finalCameraZoom" value="1" min="0.1" max="2" step="0.05">
+                                <input type="number" id="finalCameraZoomInput" value="1" min="0.1" max="2" step="0.05" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="finalCameraRotationX">Final X Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="finalCameraRotationX" value="45" min="-180" max="180" step="1">
+                                <input type="number" id="finalCameraRotationXInput" value="45" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="finalCameraRotationY">Final Y Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="finalCameraRotationY" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="finalCameraRotationYInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="finalCameraRotationZ">Final Z Rotation:</label>
+                            <div class="slider-with-value">
+                                <input type="range" id="finalCameraRotationZ" value="0" min="-180" max="180" step="1">
+                                <input type="number" id="finalCameraRotationZInput" value="0" min="-180" max="180" step="1" class="value-input">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,6 +267,16 @@
             } else {
                 isoControls.classList.remove('visible');
                 perspControls.classList.add('visible');
+            }
+        });
+        
+        // Toggle camera transition controls visibility
+        document.getElementById('enableCameraTransition').addEventListener('change', function() {
+            const transitionControls = document.querySelector('.camera-transition-controls');
+            if (this.checked) {
+                transitionControls.style.display = 'block';
+            } else {
+                transitionControls.style.display = 'none';
             }
         });
         
