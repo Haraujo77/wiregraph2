@@ -308,7 +308,7 @@ function initCards() {
     originalYPositions = [];
     targetPositions = [];
     
-    const totalSpacing = config.stackSpacing * config.numCards;
+    const totalSpacing = (config.stackSpacing + config.cardThickness) * config.numCards;
     const startZ = -totalSpacing / 2;
     
     for (let i = 0; i < config.numCards; i++) {
@@ -316,7 +316,7 @@ function initCards() {
         const initialPos = {
             x: 0,
             y: 0,
-            z: startZ + i * config.stackSpacing,
+            z: startZ + i * (config.stackSpacing + config.cardThickness),
             width: config.cardWidth,
             height: config.cardHeight,
             thickness: config.cardThickness,
@@ -578,7 +578,7 @@ function storeFinalCameraState() {
 function startReverseAnimation() {
     // Create initial stack positions for the target
     targetPositions = [];
-    const totalSpacing = config.stackSpacing * config.numCards;
+    const totalSpacing = (config.stackSpacing + config.cardThickness) * config.numCards;
     const startZ = -totalSpacing / 2;
     
     for (let i = 0; i < config.numCards; i++) {
@@ -586,7 +586,7 @@ function startReverseAnimation() {
         const initialPos = {
             x: 0,
             y: 0,
-            z: startZ + i * config.stackSpacing,
+            z: startZ + i * (config.stackSpacing + config.cardThickness),
             width: config.cardWidth,
             height: config.cardHeight,
             thickness: config.cardThickness,
